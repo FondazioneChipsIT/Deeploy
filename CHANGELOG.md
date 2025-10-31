@@ -4,6 +4,12 @@ This file contains the changelog for the Deeploy project. The changelog is divid
 ## Unreleased (Planned Release Target: v0.2.1)
 
 ### List of Pull Requests
+- Disallow shape inference [#128](https://github.com/pulp-platform/Deeploy/pull/128)
+- Remove memory-aware node bindings [#123](https://github.com/pulp-platform/Deeploy/pull/123)
+- Fix missing const's layout transformation and refactor NCHWtoNHWC passes [#122](https://github.com/pulp-platform/Deeploy/pull/122)
+- Fix aliasing [#125](https://github.com/pulp-platform/Deeploy/pull/125)
+- Support for 1D Autoencoder [#98](https://github.com/pulp-platform/Deeploy/pull/98)
+- Refactor Logging for Improved Debugging [#115](https://github.com/pulp-platform/Deeploy/pull/115)
 - Add reuse-tool as an SPDX license header linter [#113](https://github.com/pulp-platform/Deeploy/pull/113)
 - Bug fixes, API Cleanup and Reduce Compiler Warning on PULP [#112](https://github.com/pulp-platform/Deeploy/pull/112)
 - Fix PULP GEMM `batch` serialization [#109](https://github.com/pulp-platform/Deeploy/pull/109)
@@ -13,6 +19,8 @@ This file contains the changelog for the Deeploy project. The changelog is divid
 - Node Mangling to avoid duplication [#93](https://github.com/pulp-platform/Deeploy/pull/93)
 - Prepare Post v0.2.0 Release [#104](https://github.com/pulp-platform/Deeploy/pull/104)
 - Use Docker digests instead of arch-specific tags [#106](https://github.com/pulp-platform/Deeploy/pull/106)
+- Fix `Unsqueeze` Op. when using ONNX opset 13 or higher (from attribute to input) [#119](https://github.com/pulp-platform/Deeploy/pull/119)
+- Fix bias hoisting in generic GEMM with no bias [#126](https://github.com/pulp-platform/Deeploy/pull/126)
 
 ### Added
 - Add manual type inference feature (CLI: `--input-type-map`/`--input-offset-map`) to resolve ambiguities when test inputs are not representative enough
@@ -39,6 +47,14 @@ This file contains the changelog for the Deeploy project. The changelog is divid
 - Reshape operator support for PULP (`ReshapeTemplate` in bindings)
 - Missing class attributes in `Closure.py`
 - reuse_skip_wrapper.py to manually skip files
+- Centralized logging with `DEFAULT_LOGGER`, replacing `print` statements
+- Debug logs for type checking/parsing; `__repr__` for core classes
+- Buffer utilities: `checkNumLevels` validation and `sizeInBytes` method
+- Per–memory-level usage tracking and worst-case reporting in `NetworkContext`
+- Memory/I/O summaries and input/output logging in deployers
+- RequantHelpers.py for Neureka's TileConstraints
+- Added assertion that all the graph tensors after lowering have a shape annotated
+- Added testFloatGEMMnobias
 
 ### Changed
 - Replaced platform-specific tags (`*-amd64`, `*-arm64`) with direct digest references in `Noelware/docker-manifest-action`.
@@ -65,6 +81,16 @@ This file contains the changelog for the Deeploy project. The changelog is divid
 - Removed unnecessary includes from the PULP platform header list, such as `DeeployBasicMath.h`, for cleaner code generation
 - Changed types and added correct casts to fix many compiler warnings in the PULP target library
 - Use [reuse-tool](https://github.com/fsfe/reuse-tool) in pre-commit, CI, and Makefile for SPDX license header linting
+- Deployer workflow now uses `prepare(...)` instead of `generateFunction(...)`.
+- Removed `fromVariableBuffer`
+- Refactored `hoistConstant`
+- Refactored TransientBuffer's `__init__`
+- Refactor of the NCHWtoNHWC passes
+- Removed NodeMemoryLevelChecker, MemoryAwareNodeBinding
+- Removed _parseNode from MemoryNetworkDeployer since we don't need the annotations before typeChecking anymore
+- Removed Wmem variants of bindings and tile constraints from Neureka
+- Disabled ICCT_ITA_8 MemPool test because it was using a lowering that created shapeless tensors
+- Added missing shape annotation to the testTypeInferenceDifferentTypes
 
 ### Fixed
 - Prevent node duplication for graphs generated via GraphSurgeon
@@ -74,6 +100,11 @@ This file contains the changelog for the Deeploy project. The changelog is divid
 - Fixed multiple typos in variable and method names, such as changing `includeGobalReferences` to `includeGlobalReferences` and `dicardedMappers` to `discardedMappers`
 - Corrected method usage in `importDeeployState` to call `NetworkContext.importNetworkContext` instead of the incorrect method name
 - Correctly return `signProp` from `setupDeployer` instead of hardcoding the value to `False` in `testMVP.py`
+- Fixed `Unsqueeze` Op. when using ONNX opset 13 or higher (from attribute to input)
+- Fixed aliasing
+- Missing layout transformation of the const's (bias, mul, add, shift in Conv/RequantizedConv)
+- Keep mul/add rank of requantized Neureka tile constraints
+- Fix bias hoisting in generic GEMM with no bias
 
 ### Removed
 - Delete outdated and unused `.gitlab-ci.yml` file
@@ -149,6 +180,13 @@ This release containing major architectural changes, new platform support, enhan
 
 
 ### Added
+- BatchNorm kernel 
+- ConvTranspose kernel 
+- MaxPool1D kernel 
+- Template for 1D Convolution
+- Support for float32 data type in the previous kernels
+- Float binding for Pad1D kernel
+- Test for Autoencoder1D in the CI pipeline
 - ChimeraDeployer, currently mainly a placeholder
 - Allocate templates for Chimera
 - ChimeraPlatform, using appropriate allocation templates and using the generic Parser + Binding for the Add node
@@ -282,6 +320,8 @@ This release containing major architectural changes, new platform support, enhan
 - `dev-requirements.txt` tracking the dependencies of the build system, linting, documentation, and QOL.
 
 ### Changed
+- FloatConvTemplate file
+- Platform.py file  
 - Bump the CMake version to 3.24 as required for the chimera-sdk
 - Bump GVSoC's version and add chimera simulation target
 - Rename the generic source util to utils to avoid name collision with chimera-sdk

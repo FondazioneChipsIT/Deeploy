@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Any, Tuple, Union
+from typing import Any, Union
 
 import onnx_graphsurgeon as gs
 
@@ -63,11 +63,6 @@ class NetworkDeployerWrapper(NetworkDeployer):
     def codeTransform(self, verbose: CodeGenVerbosity = _NoVerbosity):
         return self._innerObject.codeTransform(verbose)
 
-    # MemoryAwareDeployer augment
-    def _parseNode(self, node: ONNXLayer, ctxt: NetworkContext,
-                   default_channels_first: bool) -> Tuple[NetworkContext, bool]:
-        return self._innerObject._parseNode(node, ctxt, default_channels_first)
-
     # PULPDeployer augment
     def generateBufferAllocationCode(self) -> str:
         return self._innerObject.generateBufferAllocationCode()
@@ -75,3 +70,9 @@ class NetworkDeployerWrapper(NetworkDeployer):
     # MultiEngineDeployer augment
     def _mapNode(self, node: gs.Node) -> Union[ONNXLayer, Any]:
         return self._innerObject._mapNode(node)
+
+    def _printMemorySummary(self):
+        return self._innerObject._printMemorySummary()
+
+    def _printInputOutputSummary(self):
+        return self._innerObject._printInputOutputSummary()

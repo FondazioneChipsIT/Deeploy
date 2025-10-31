@@ -74,6 +74,7 @@ def generateTestInputsHeader(deployer: NetworkDeployer, test_inputs: List) -> st
     retStr += f"void* testInputVector[{len(vectors)}] = {{"
     retStr += ", ".join(vectors)
     retStr += "};\n"
+
     return retStr
 
 
@@ -108,6 +109,7 @@ def generateTestOutputsHeader(deployer: NetworkDeployer, test_outputs: List[np.n
     retStr += f"void* testOutputVector[{len(test_outputs)}] = " + "{"
     retStr += ", ".join([f"testOutputVector{idx}" for idx, _ in enumerate(test_outputs)])
     retStr += "};\n"
+
     return retStr
 
 
