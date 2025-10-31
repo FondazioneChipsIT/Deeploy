@@ -20,20 +20,20 @@ from Deeploy.Targets.Generic.TypeCheckers import AddChecker, ConcatChecker, Conv
     GatherChecker, GELUChecker, GEMMChecker, HardswishChecker, LayerNormChecker, MatMulChecker, MulChecker, \
     QuantChecker, ReduceMeanChecker, ReluChecker, ReshapeChecker, RQAddChecker, RQHardswishChecker, SGDChecker, \
     SliceChecker, SoftmaxChecker, SoftmaxCrossEntropyLossChecker, TransposeChecker
-from Deeploy.Targets.PULPOpen.CodeTransformationPasses.PULPClusterSynch import PULPSynchCoresPass
-from Deeploy.Targets.PULPOpen.CodeTransformationPasses.PULPClusterTiling import PULPClusterTiling
-from Deeploy.Targets.PULPOpen.CodeTransformationPasses.PULPL3Tiling import PULPL3Tiling
-from Deeploy.Targets.PULPOpen.CodeTransformationPasses.PULPProfileUntiled import PULPProfileUntiled
-from Deeploy.Targets.PULPOpen.DataTypes import PULPDMAFuture
-from Deeploy.Targets.PULPOpen.DMA.L3Dma import l3DmaHack
-from Deeploy.Targets.PULPOpen.DMA.iDMA import iDMA
-from Deeploy.Targets.PULPOpen.Templates import ConvTemplate, FloatAddTemplate, FloatConvTemplate, FloatGELUTemplate, \
+from Deeploy.Targets.PULPOpen_mchan.CodeTransformationPasses.PULPClusterSynch import PULPSynchCoresPass
+from Deeploy.Targets.PULPOpen_mchan.CodeTransformationPasses.PULPClusterTiling import PULPClusterTiling
+from Deeploy.Targets.PULPOpen_mchan.CodeTransformationPasses.PULPL3Tiling import PULPL3Tiling
+from Deeploy.Targets.PULPOpen_mchan.CodeTransformationPasses.PULPProfileUntiled import PULPProfileUntiled
+from Deeploy.Targets.PULPOpen_mchan.DataTypes import PULPDMAFuture
+from Deeploy.Targets.PULPOpen_mchan.DMA.L3Dma import l3DmaHack
+from Deeploy.Targets.PULPOpen_mchan.DMA.MchanDma import MchanDma
+from Deeploy.Targets.PULPOpen_mchan.Templates import ConvTemplate, FloatAddTemplate, FloatConvTemplate, FloatGELUTemplate, \
     FloatGemmTemplate, FloatLayernormTemplate, FloatMatMulTemplate, FloatMaxPoolTemplate, FloatMulTemplate, \
     FloatReluTemplate, FloatSoftmaxTemplate, GEMMTemplate, MatrixVectorTemplate, MaxPool2DTemplate, MulTemplate, \
     ReduceMeanTemplate, RequantShiftTemplate, ReshapeTemplate, RQAddTemplate, RQSiHardswishTemplate, SGDTemplate, \
     SliceTemplate, SoftmaxCrossEntropyLossTemplate, TallGEMMTemplate, TransposeTemplate, UniformRequantShiftTemplate, \
     iRMSNormTemplate, iSoftmaxTemplate
-from Deeploy.Targets.PULPOpen.TypeCheckers import PULPConvChecker, PULPLinearChecker, PULPMaxPoolChecker, \
+from Deeploy.Targets.PULPOpen_mchan.TypeCheckers import PULPConvChecker, PULPLinearChecker, PULPMaxPoolChecker, \
     PULPRequantShiftChecker
 from Deeploy.TilingExtension.CodeTransformationPasses.TilingVariableReplacement import TilingVariableReplacement, \
     TilingVariableReplacementUpdate
@@ -102,7 +102,7 @@ ForkTransformer = CodeTransformation([
     PULPSynchCoresPass(),
     ForkClosure(writeback = False, generateStruct = True),
     TilingVariableReplacementUpdate("L1"),
-    PULPClusterTiling("L2", "L1", iDMA()),
+    PULPClusterTiling("L2", "L1", MchanDma()),
     ArgumentStructGeneration(),
     MemoryManagementGeneration("L1"),
     TilingVariableReplacement("L2"),
@@ -120,7 +120,7 @@ ClusterTransformer = CodeTransformation([
     TilingVariableReplacement("L1"),
     TilingCallClosure(writeback = False, generateStruct = True),
     TilingVariableReplacementUpdate("L1"),
-    PULPClusterTiling("L2", "L1", iDMA()),
+    PULPClusterTiling("L2", "L1", MchanDma()),
     ArgumentStructGeneration(),
     MemoryManagementGeneration("L1"),
     TilingVariableReplacement("L2"),
