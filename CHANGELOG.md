@@ -55,6 +55,8 @@ This file contains the changelog for the Deeploy project. The changelog is divid
 - RequantHelpers.py for Neureka's TileConstraints
 - Added assertion that all the graph tensors after lowering have a shape annotated
 - Added testFloatGEMMnobias
+- Added distinction between pulp-open_iDMA and pulp-open_Mchan platforms
+- Added iDMA class (using pulp-sdk drivers) and pulp-open testRunners
 
 ### Changed
 - Replaced platform-specific tags (`*-amd64`, `*-arm64`) with direct digest references in `Noelware/docker-manifest-action`.
@@ -105,6 +107,7 @@ This file contains the changelog for the Deeploy project. The changelog is divid
 - Missing layout transformation of the const's (bias, mul, add, shift in Conv/RequantizedConv)
 - Keep mul/add rank of requantized Neureka tile constraints
 - Fix bias hoisting in generic GEMM with no bias
+- Fixed rtl and gvsoc (no 32-bits iDMA support yet) flows for pulp-open platform
 
 ### Removed
 - Delete outdated and unused `.gitlab-ci.yml` file
