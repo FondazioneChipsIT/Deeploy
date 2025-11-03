@@ -58,6 +58,8 @@ This file contains the changelog for the Deeploy project. The changelog is divid
 - Added testFloatGEMMnobias
 - Profiling support and optional comments in generated DMA code for better traceability
 - Added new waiting-strategy logic with fine-grained `PerTensorWaitingStrategy`
+- Added distinction between pulp-open_iDMA and pulp-open_Mchan platforms
+- Added iDMA class (using pulp-sdk drivers) and pulp-open testRunners
 
 ### Changed
 - Replaced platform-specific tags (`*-amd64`, `*-arm64`) with direct digest references in `Noelware/docker-manifest-action`.
@@ -110,6 +112,7 @@ This file contains the changelog for the Deeploy project. The changelog is divid
 - Keep mul/add rank of requantized Neureka tile constraints
 - Fix bias hoisting in generic GEMM with no bias
 - DMA synchronization bug causing reduced DB performance on memory-bound kernels.
+- Fixed rtl and gvsoc (no 32-bits iDMA support yet) flows for pulp-open platform
 
 ### Removed
 - Delete outdated and unused `.gitlab-ci.yml` file

@@ -7,6 +7,7 @@ include(cmake/pulp-sdk-base.cmake)
 set(PULP_SDK_HOME $ENV{PULP_SDK_HOME})
 
 set(PULP_OPEN_COMPILE_FLAGS
+  -include ${PULP_SDK_HOME}/rtos/pulpos/pulp/include/pos/chips/pulp/config.h
   -DCONFIG_PULP
   -DCONFIG_BOARD_VERSION_PULP
   -DCONFIG_PROFILE_PULP
@@ -34,7 +35,6 @@ set(PULP_SDK_INCLUDES ${PULP_OPEN_INCLUDES} ${PULP_SDK_BASE_INCLUDE})
 target_include_directories(pulp-sdk SYSTEM PUBLIC ${PULP_SDK_INCLUDES} ${PULP_OPEN_INCLUDES})
 target_compile_options(pulp-sdk PUBLIC ${PULP_SDK_COMPILE_FLAGS})
 target_compile_options(pulp-sdk PRIVATE
-  -O2
   -Wno-sign-conversion
   -Wno-unused-function
   -Wno-unused-parameter
