@@ -2,7 +2,7 @@ import math
 from typing import Dict, Tuple
 
 from Deeploy.DeeployTypes import NetworkContext, NodeTemplate, OperatorRepresentation, VariableBuffer
-from Deeploy.TilingExtension.AsyncDma import AsyncDma, DmaDirection, Future, TensorGroupWaitingStrategy
+from Deeploy.TilingExtension.AsyncDma import AsyncDma, DirectionWaitingStrategy, DmaDirection, Future
 
 
 class iDMAChannelFuture(Future):
@@ -10,6 +10,7 @@ class iDMAChannelFuture(Future):
     _initTemplate = NodeTemplate("")
     _deinitTemplate = NodeTemplate("")
     _waitTemplate = NodeTemplate("")
+    _allocTemplate = NodeTemplate("")
 
 
 class iDMA(AsyncDma):
@@ -18,7 +19,7 @@ class iDMA(AsyncDma):
         1: NodeTemplate(" pulp_idma_transfer_1d_and_wait(${direction}, ${ext}, ${loc}, ${size_1d}); ")
         # 2: NodeTemplate("mchan_transfer_2d_ext_strided(${cmd}, ${loc}, ${ext}, ${size_1d}, ${stride_2d});"),
     }
-    _waitingStrategy = TensorGroupWaitingStrategy(iDMAChannelFuture, "channel_id")
+    _waitingStrategy = DirectionWaitingStrategy(iDMAChannelFuture, "channel_id")
 
     def __init__(self, transferTemplates: Dict[int, NodeTemplate] = _transferTemplates) -> None:
         super().__init__(transferTemplates)
