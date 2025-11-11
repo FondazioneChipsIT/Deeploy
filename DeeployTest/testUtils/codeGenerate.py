@@ -10,6 +10,7 @@ import numpy as np
 from Deeploy.DeeployTypes import CodeGenVerbosity, ConstantBuffer, NetworkDeployer, VariableBuffer
 from Deeploy.Targets.MemPool.Platform import MemPoolPlatform
 from Deeploy.Targets.PULPOpen.Platform import MemoryPULPPlatform, MemoryPULPPlatformWrapper, PULPPlatform
+from Deeploy.Targets.PULPOpen_mchan.Platform import MemoryPULPPlatform_mchan, MemoryPULPPlatformWrapper_mchan, PULPPlatform_mchan
 
 _TEXT_ALIGN = 30
 
@@ -130,6 +131,12 @@ def generateTestNetworkHeader(deployer: NetworkDeployer) -> str:
         void InitNetwork();
 
         """
+    elif isinstance(deployer.Platform, (PULPPlatform_mchan, MemoryPULPPlatform_mchan, MemoryPULPPlatformWrapper_mchan)):
+        retStr += """
+        void RunNetwork();
+        void InitNetwork();
+
+        """
     else:
         retStr += """
         void RunNetwork(uint32_t core_id, uint32_t numThreads);
@@ -173,6 +180,11 @@ def generateTestNetworkImplementation(deployer: NetworkDeployer, verbosityCfg: C
         void RunNetwork(){
         """
         retStr += deployer.generateInferenceInitializationCode()
+    elif isinstance(deployer.Platform, (PULPPlatform_mchan, MemoryPULPPlatform_mchan, MemoryPULPPlatformWrapper_mchan)):
+        retStr += """
+        void RunNetwork(){
+        """
+        retStr += deployer.generateInferenceInitializationCode()
     else:
         retStr += """
         void RunNetwork(__attribute__((unused)) uint32_t core_id, __attribute__((unused)) uint32_t numThreads){
@@ -182,6 +194,12 @@ def generateTestNetworkImplementation(deployer: NetworkDeployer, verbosityCfg: C
     retStr += deployer.generateFunction(verbosityCfg)
     if isinstance(deployer.Platform, (PULPPlatform, MemoryPULPPlatform, MemoryPULPPlatformWrapper)):
         retStr += """
+        }
+
+        void InitNetwork(){
+        """
+    elif isinstance(deployer.Platform, (PULPPlatform_mchan, MemoryPULPPlatform_mchan, MemoryPULPPlatformWrapper_mchan)):
+         retStr += """
         }
 
         void InitNetwork(){

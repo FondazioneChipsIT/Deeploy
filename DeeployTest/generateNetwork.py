@@ -141,7 +141,8 @@ def generateNetwork(args):
     verbosityCfg = _NoVerbosity
     if isinstance(platform, PULPPlatform):
         verbosityCfg.untiledProfiling = args.profileUntiled
-
+    elif isinstance(platform, PULPPlatform_mchan):
+        verbosityCfg.untiledProfiling = args.profileUntiled
     # Parse graph and infer output levels and signedness
     _ = deployer.prepare(verbosityCfg)
 
