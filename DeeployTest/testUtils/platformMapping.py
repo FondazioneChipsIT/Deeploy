@@ -23,13 +23,15 @@ from Deeploy.Targets.Neureka.Platform import MemoryNeurekaPlatform, MemoryNeurek
     NeurekaPlatform
 from Deeploy.Targets.PULPOpen.Deployer import PULPDeployer
 from Deeploy.Targets.PULPOpen.Platform import MemoryPULPPlatform, MemoryPULPPlatformWrapper, PULPOptimizer, PULPPlatform
+from Deeploy.Targets.PULPOpen_mchan.Deployer import PULPDeployer_mchan
+from Deeploy.Targets.PULPOpen_mchan.Platform import MemoryPULPPlatform_mchan, MemoryPULPPlatformWrapper_mchan, PULPOptimizer_mchan, PULPPlatform_mchan
 from Deeploy.Targets.Snitch.Deployer import SnitchDeployer
 from Deeploy.Targets.Snitch.Platform import SnitchOptimizer, SnitchPlatform
 from Deeploy.Targets.SoftHier.Deployer import SoftHierDeployer
 from Deeploy.Targets.SoftHier.Platform import SoftHierOptimizer, SoftHierPlatform
 
 _SIGNPROP_PLATFORMS = ["Apollo3", "Apollo4", "QEMU-ARM", "Generic", "MemPool", "SoftHier"]
-_NONSIGNPROP_PLATFORMS = ["Siracusa", "Siracusa_w_neureka", "PULPOpen", "Snitch", "Chimera"]
+_NONSIGNPROP_PLATFORMS = ["Siracusa", "Siracusa_w_neureka", "PULPOpen", "PULPOpen_mchan", "Snitch", "Chimera"]
 _PLATFORMS = _SIGNPROP_PLATFORMS + _NONSIGNPROP_PLATFORMS
 
 
@@ -59,6 +61,9 @@ def mapPlatform(platformName: str) -> Tuple[DeploymentPlatform, bool]:
     elif platformName == "Siracusa" or platformName == "PULPOpen":
         Platform = PULPPlatform()
 
+    elif platformName == "PULPOpen_mchan":
+        Platform = PULPPlatform_mchan()
+
     elif platformName == "Siracusa_w_neureka":
         Platform = NeurekaPlatform()
 
@@ -81,6 +86,8 @@ def setupMemoryPlatform(platform: DeploymentPlatform, memoryHierarchy: MemoryHie
                         defaultTargetMemoryLevel: MemoryLevel) -> Union[MemoryPlatform, MemoryPlatformWrapper]:
     if isinstance(platform, PULPPlatform):
         return MemoryPULPPlatformWrapper(platform, memoryHierarchy, defaultTargetMemoryLevel)
+    elif isinstance(platform, PULPPlatform_mchan):
+        return MemoryPULPPlatformWrapper_mchan(platform, memoryHierarchy, defaultTargetMemoryLevel)
     elif isinstance(platform, NeurekaPlatform):
         weightMemoryLevel = memoryHierarchy.memoryLevels["WeightMemory_SRAM"] \
             if "WeightMemory_SRAM" in memoryHierarchy.memoryLevels else None
@@ -209,6 +216,23 @@ def mapDeployer(platform: DeploymentPlatform,
             default_channels_first = False
 
         deployer = PULPDeployer(graph,
+                                platform,
+                                inputTypes,
+                                loweringOptimizer,
+                                scheduler,
+                                name = name,
+                                default_channels_first = default_channels_first,
+                                deeployStateDir = deeployStateDir)
+
+    elif isinstance(platform, (PULPPlatform_mchan, MemoryPULPPlatform_mchan, MemoryPULPPlatformWrapper_mchan)):
+
+        if loweringOptimizer is None:
+            loweringOptimizer = PULPOptimizer_mchan
+
+        if default_channels_first is None:
+            default_channels_first = False
+
+        deployer = PULPDeployer_mchan(graph,
                                 platform,
                                 inputTypes,
                                 loweringOptimizer,
