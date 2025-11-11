@@ -21,6 +21,7 @@ from Deeploy.DeeployTypes import _NoVerbosity
 from Deeploy.Logging import DEFAULT_LOGGER as log
 from Deeploy.Targets.CortexM.Platform import CMSISPlatform
 from Deeploy.Targets.PULPOpen.Platform import PULPPlatform
+from Deeploy.Targets.PULPOpen_mchan.Platform import PULPPlatform_mchan
 
 
 def generateNetwork(args):
@@ -137,7 +138,8 @@ def generateNetwork(args):
     verbosityCfg = _NoVerbosity
     if isinstance(platform, PULPPlatform):
         verbosityCfg.untiledProfiling = args.profileUntiled
-
+    elif isinstance(platform, PULPPlatform_mchan):
+        verbosityCfg.untiledProfiling = args.profileUntiled
     # Parse graph and infer output levels and signedness
     _ = deployer.prepare(verbosityCfg)
 
