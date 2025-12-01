@@ -26,13 +26,13 @@ from Deeploy.Targets.Generic.Templates import AllocateTemplate as BasicAllocateT
 from Deeploy.Targets.Generic.TopologyOptimizationPasses.Passes import DequantPatternPass, IntegerDivRequantMergePass, \
     MergeConstAddAndRequantPass, MergeTrueIntegerDivRequantShiftPass, QuantPatternPass, RQSSplitPass, \
     SkipEmptyConcatPass, SkipUnityRequantPass, iGELURequantMergePass, iHardswishRequantMergePass
-from Deeploy.Targets.PULPOpen_mchan.Bindings import BasicDequantBindings, BasicQuantBindings, PULPConv1DBinding, \
+from Deeploy.Targets.PULPOpen_iDMA.Bindings import BasicDequantBindings, BasicQuantBindings, PULPConv1DBinding, \
     PULPDMASliceBindings, PULPDWConv1DBinding, PULPReduceMeanBindings
-from Deeploy.Targets.PULPOpen_mchan.Layers import PULPRQSConvLayer, PULPRQSGEMMLayer
-from Deeploy.Targets.PULPOpen_mchan.Parsers import PULPConv1DParser, PULPConv2DParser, PULPDWConv1DParser, \
+from Deeploy.Targets.PULPOpen_iDMA.Layers import PULPRQSConvLayer, PULPRQSGEMMLayer
+from Deeploy.Targets.PULPOpen_iDMA.Parsers import PULPConv1DParser, PULPConv2DParser, PULPDWConv1DParser, \
     PULPDWConv2DParser, PULPFPConv2DParser, PULPGEMMParser, PULPMatrixVecParser, PULPTallGEMMParser
-from Deeploy.Targets.PULPOpen_mchan.Templates import AllocateTemplate, FreeTemplate
-from Deeploy.Targets.PULPOpen_mchan.Tiler import PULPAddTilingReadyBindings, PULPConcatTilingReadyBindings, \
+from Deeploy.Targets.PULPOpen_iDMA.Templates import AllocateTemplate, FreeTemplate
+from Deeploy.Targets.PULPOpen_iDMA.Tiler import PULPAddTilingReadyBindings, PULPConcatTilingReadyBindings, \
     PULPConv2DTilingReadyBindings, PULPFlattenTilingReadyBindings, PULPFPGELUTilingReadyBindings, \
     PULPFPGEMMTilingReadyBindings, PULPGatherTilingReadyBindings, PULPiHardswishTilingReadyBindings, \
     PULPiRMSNormTilingReadyBindings, PULPiRQSGELUTilingReadyBindings, PULPLayernormTilingReadyBindings, \
@@ -43,7 +43,7 @@ from Deeploy.Targets.PULPOpen_mchan.Tiler import PULPAddTilingReadyBindings, PUL
     PULPRQSTilingReadyBindings, PULPSGDTilingReadyBindings, PULPSoftmaxCrossEntropyGradTilingReadyBindings, \
     PULPSoftmaxCrossEntropyTilingReadyBindings, PULPSoftmaxGradTilingReadyBindings, PULPSoftmaxTilingReadyBindings, \
     PULPTransposeTilingReadyBindings, PULPUniformRQSTilingReadyBindings
-from Deeploy.Targets.PULPOpen_mchan.TopologyOptimizationPasses.Passes import PULPAddRequantMergePass, \
+from Deeploy.Targets.PULPOpen_iDMA.TopologyOptimizationPasses.Passes import PULPAddRequantMergePass, \
     PULPConvRequantMergePass, PULPGEMMRequantMergePass, PULPMatMulRequantMergePass
 
 RQAddMapper = NodeMapper(RQAddParser(), PULPRQAddTilingReadyBindings)
@@ -209,7 +209,7 @@ class PULPStructBuffer(StructBuffer):
     deallocTemplate = NodeTemplate("")
 
 
-PULPOptimizer_mchan = TopologyOptimizer([
+PULPOptimizer_iDMA = TopologyOptimizer([
     QuantPatternPass(),
     DequantPatternPass(),
     SkipEmptyConcatPass(),
@@ -226,12 +226,13 @@ PULPOptimizer_mchan = TopologyOptimizer([
     PULPGEMMRequantMergePass(),
     PULPMatMulRequantMergePass(),
     PULPAddRequantMergePass()
-])
+],
+                                  name = "PULPOptimizer_iDMA")
 
 # SCHEREMO: stdint is included before pulp_nn_kernels.h because it is supposed to be included in there, but isn't...
 _includeList = [
     "pmsis.h", "stdint.h", "pulp_nn_kernels.h", "DeeployBasicMath.h", "DeeployPULPMath.h",
-    "bsp/ram.h", "pulp_core.h", "mchan_siracusa.h"
+    "bsp/ram.h", "pulp_core.h"
 ]
 
 
@@ -241,7 +242,7 @@ class PULPClusterEngine(DeploymentEngine):
         super().__init__(name, Mapping, initCode, includeList)
 
 
-class PULPPlatform_mchan(DeploymentPlatform):
+class PULPPlatform_iDMA(DeploymentPlatform):
 
     def __init__(self,
                  engines = [PULPClusterEngine("PULPCluster")],
@@ -252,7 +253,7 @@ class PULPPlatform_mchan(DeploymentPlatform):
         super().__init__(engines, variableBuffer, constantBuffer, structBuffer, transientBuffer)
 
 
-class MemoryPULPPlatform_mchan(MemoryPlatform):
+class MemoryPULPPlatform_iDMA(MemoryPlatform):
 
     untiledOps = ["add"]
 
@@ -273,13 +274,13 @@ class MemoryPULPPlatform_mchan(MemoryPlatform):
         return super().getTargetMemoryLevel(node, tensorName, ctxt)
 
 
-class MemoryPULPPlatformWrapper_mchan(MemoryPlatformWrapper):
+class MemoryPULPPlatformWrapper_iDMA(MemoryPlatformWrapper):
 
     untiledOps = ["add"]
 
-    def __init__(self, platform: PULPPlatform_mchan, memoryHierarchy: MemoryHierarchy, defaultTargetMemoryLevel: MemoryLevel):
-        assert isinstance(platform, PULPPlatform_mchan), \
-        f"Given platform is not an instance of PULPPlatform_mchan. Platform type: {type(platform).__name__}"
+    def __init__(self, platform: PULPPlatform_iDMA, memoryHierarchy: MemoryHierarchy, defaultTargetMemoryLevel: MemoryLevel):
+        assert isinstance(platform, PULPPlatform_iDMA), \
+        f"Given platform is not an instance of PULPPlatform_iDMA. Platform type: {type(platform).__name__}"
         super().__init__(platform, memoryHierarchy, defaultTargetMemoryLevel)
 
     def getTargetMemoryLevel(self, node: gs.Node, tensorName: str, ctxt: NetworkContext) -> str:

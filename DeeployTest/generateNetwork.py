@@ -20,6 +20,7 @@ from Deeploy.CommonExtensions.OptimizationPasses.TopologyOptimizationPasses.Debu
 from Deeploy.DeeployTypes import _NoVerbosity
 from Deeploy.Logging import DEFAULT_LOGGER as log
 from Deeploy.Targets.CortexM.Platform import CMSISPlatform
+from Deeploy.Targets.PULPOpen_iDMA.Platform import PULPClusterEngine, PULPPlatform_iDMA
 from Deeploy.Targets.PULPOpen.Platform import PULPClusterEngine, PULPPlatform
 
 
@@ -139,9 +140,9 @@ def generateNetwork(args):
         deployer.loweringOptimizer.passes.insert(0, EmulateCMSISRequantPass())
 
     verbosityCfg = _NoVerbosity
-    if isinstance(platform, PULPPlatform):
+    if isinstance(platform, PULPPlatform_iDMA):
         verbosityCfg.untiledProfiling = args.profileUntiled
-    elif isinstance(platform, PULPPlatform_mchan):
+    elif isinstance(platform, PULPPlatform):
         verbosityCfg.untiledProfiling = args.profileUntiled
     # Parse graph and infer output levels and signedness
     _ = deployer.prepare(verbosityCfg)
