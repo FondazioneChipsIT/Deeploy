@@ -9,7 +9,7 @@ from ortools.constraint_solver.pywrapcp import IntVar
 from Deeploy.AbstractDataTypes import PointerClass
 from Deeploy.CommonExtensions.DataTypes import uint8_t, uint16_t
 from Deeploy.DeeployTypes import NetworkContext, OperatorRepresentation
-from Deeploy.Targets.PULPOpen_mchan.TileConstraints.ConvTileConstraint import Conv2DTileConstraint
+from Deeploy.Targets.PULPOpen_iDMA.TileConstraints.ConvTileConstraint import Conv2DTileConstraint
 from Deeploy.TilingExtension.MemoryConstraints import NodeMemoryConstraint
 from Deeploy.TilingExtension.TileConstraint import TileConstraint
 from Deeploy.TilingExtension.TilerModel import PerformanceHint, TilerModel

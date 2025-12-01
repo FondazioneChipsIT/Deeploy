@@ -15,7 +15,7 @@ from Deeploy.CommonExtensions.OptimizationPasses.TopologyOptimizationPasses.Lowe
 from Deeploy.DeeployTypes import ConstantBuffer, DeploymentPlatform, NodeTemplate, TopologyOptimizer, VariableBuffer
 from Deeploy.Targets.Generic.TopologyOptimizationPasses.Passes import ReshapeConstOptPass, TransposeConstOptPass, \
     TransposeMergePass, TransposeNoPermOptPass, TransposeSplitPass
-from Deeploy.Targets.PULPOpen_mchan.TopologyOptimizationPasses.Passes import RQAddTransposeSquashPass
+from Deeploy.Targets.PULPOpen_iDMA.TopologyOptimizationPasses.Passes import RQAddTransposeSquashPass
 
 _L3AllocTemplate = NodeTemplate("""
 ${locPtr} = cl_ram_malloc(${size});
@@ -26,7 +26,7 @@ load_file_to_ram(${locPtr}, "${extName}.hex");
 """)
 
 
-class PULPDeployer_mchan(SignPropDeployer):
+class PULPDeployer_iDMA(SignPropDeployer):
 
     def __init__(self,
                  graph: gs.Graph,

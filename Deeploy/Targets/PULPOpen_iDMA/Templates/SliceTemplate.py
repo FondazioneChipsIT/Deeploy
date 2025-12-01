@@ -7,7 +7,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 
 from Deeploy.DeeployTypes import NetworkContext, NodeTemplate, OperatorRepresentation
-from Deeploy.Targets.PULPOpen_mchan.DataTypes import PULPStructDataTypes
+from Deeploy.Targets.PULPOpen_iDMA.DataTypes import PULPStructDataTypes
 
 
 class _SliceTemplate(NodeTemplate):

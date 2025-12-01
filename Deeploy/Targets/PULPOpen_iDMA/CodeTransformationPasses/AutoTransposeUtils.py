@@ -8,7 +8,7 @@ from typing import Dict, List, Literal, Tuple
 from Deeploy.CommonExtensions.OptimizationPasses.TopologyOptimizationPasses.LoweringOptimizationPasses import \
     _invertPermutation, _permute, _permuteHyperRectangle
 from Deeploy.DeeployTypes import NetworkContext, OperatorRepresentation
-from Deeploy.Targets.PULPOpen_mchan.DataTypes import PULPStructDataTypes
+from Deeploy.Targets.PULPOpen_iDMA.DataTypes import PULPStructDataTypes
 from Deeploy.TilingExtension.TilingCodegen import HyperRectangle, minimizeRectangle
 
 

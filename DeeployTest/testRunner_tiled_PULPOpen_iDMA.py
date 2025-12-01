@@ -7,8 +7,7 @@ from testUtils.testRunner import TestRunner, TestRunnerArgumentParser
 if __name__ == "__main__":
 
     parser = TestRunnerArgumentParser(
-        tiling_arguments = False,
-        description = "Deeploy Code Generation Utility for the Siracusa Platform (no Tiling).")
+        tiling_arguments = True, description = "Deeploy Code Generation Utility for the Siracusa Platform (Tiling).")
 
     parser.add_argument('--cores',
                         metavar = '<cores>',
@@ -16,16 +15,10 @@ if __name__ == "__main__":
                         type = int,
                         default = 8,
                         help = 'Set number of cluster cores')
-
-    parser.add_argument('--profileUntiled',
-                        action = 'store_true',
-                        dest = 'profileUntiled',
-                        default = False,
-                        help = 'Profile Untiled')
-
     args = parser.parse_args()
 
-    testRunner = TestRunner(platform = "PULPOpen", simulator = "vsim", tiling = False, argument_parser = parser)
+    testRunner = TestRunner(platform = "PULPOpen_iDMA", simulator = "vsim", tiling = True, argument_parser = parser)
 
     testRunner.cmake_args += f" -D NUM_CORES={args.cores}"
+
     testRunner.run()
