@@ -71,8 +71,7 @@ macro(add_pulp_open_qsim_simulation name)
 
     COMMAND ${CMAKE_COMMAND} -E env USE_QONE=1
       VSIM_RUNNER_FLAGS=+ENTRY_POINT=${ENTRY_POINT}
-      qsim -64 -qwavedb=+signal+memory
-        -do "source ${VSIM_PATH}/tcl_files/config/run_and_exit.tcl"
+      qsim -do "source ${VSIM_PATH}/tcl_files/config/run_and_exit.tcl"
         -do "source ${VSIM_PATH}/tcl_files/run.tcl;"
 
     COMMENT "Simulating ${name} with qsim"
