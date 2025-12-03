@@ -46,7 +46,7 @@ macro(add_pulp_open_qsim_simulation name)
 
   set(ENTRY_POINT "0x1c008080")
 
-  add_custom_target(qsim_${name}
+  add_custom_target(qsim.gui_${name}
     DEPENDS ${name} ${SIM_DIRS}
     WORKING_DIRECTORY ${TARGET_BUILD_DIR}
 
@@ -67,6 +67,35 @@ macro(add_pulp_open_qsim_simulation name)
     COMMAND ${CMAKE_COMMAND} -E env USE_QONE=1
       VSIM_RUNNER_FLAGS=+ENTRY_POINT=${ENTRY_POINT}
       qsim -do "source ${VSIM_PATH}/tcl_files/config/run_and_exit.tcl"
+        -do "source ${VSIM_PATH}/tcl_files/run.tcl; "
+
+    COMMENT "Simulating ${name} with qsim"
+    POST_BUILD
+    USES_TERMINAL
+    VERBATIM
+  )
+
+  add_custom_target(qsim_${name}
+    DEPENDS ${name} ${SIM_DIRS}
+    WORKING_DIRECTORY ${TARGET_BUILD_DIR}
+
+    COMMAND ${CMAKE_COMMAND} -E env
+      VSIM_PATH=${VSIM_PATH}
+      VSIM_RUNNER_FLAGS=+ENTRY_POINT=${ENTRY_POINT}
+      $ENV{PULP_SDK_HOME}/bin/stim_utils.py --binary=${TARGETS} --vectors=${TARGET_BUILD_DIR}/vectors/stim.txt
+
+    COMMAND $ENV{PULP_SDK_HOME}/bin/plp_mkflash
+      --flash-boot-binary=${TARGETS}
+      --stimuli=${TARGET_BUILD_DIR}/vectors/qspi_stim.slm
+      --flash-type=spi --qpi
+
+    COMMAND $ENV{PULP_SDK_HOME}/bin/slm_hyper.py
+      --input=${TARGET_BUILD_DIR}/vectors/qspi_stim.slm
+      --output=${TARGET_BUILD_DIR}/vectors/hyper_stim.slm
+
+    COMMAND ${CMAKE_COMMAND} -E env USE_QONE=1
+      VSIM_RUNNER_FLAGS=+ENTRY_POINT=${ENTRY_POINT}
+      qsim -c -do "source ${VSIM_PATH}/tcl_files/config/run_and_exit.tcl"
         -do "source ${VSIM_PATH}/tcl_files/run.tcl;"
 
     COMMENT "Simulating ${name} with qsim"
