@@ -23,7 +23,8 @@ from Deeploy.Targets.PULPOpen_iDMA.Bindings import PULPAddBindings, PULPConcatBi
     PULPRQSMatrixVecBindings, PULPRQSTallGEMMBindings, PULPSGDBindings, PULPSoftmaxBindings, \
     PULPSoftmaxCrossEntropyLossBindings, PULPSoftmaxCrossEntropyLossGradBindings, PULPSoftmaxGradBindings, \
     PULPTransposeBindings, PULPUniformRQSBindings
-from Deeploy.Targets.PULPOpen_iDMA.TileConstraints.ConvTileConstraint import Conv2DTileConstraint, RQConv2DTileConstraint
+from Deeploy.Targets.PULPOpen_iDMA.TileConstraints.ConvTileConstraint import Conv2DTileConstraint, \
+    RQConv2DTileConstraint
 from Deeploy.Targets.PULPOpen_iDMA.TileConstraints.DWConvTileConstraint import DWConv2DTileConstraint
 from Deeploy.Targets.PULPOpen_iDMA.TileConstraints.GatherTileConstraint import GatherTileConstraint
 from Deeploy.Targets.PULPOpen_iDMA.TileConstraints.GEMMTileConstraint import FloatGEMMTileConstraint, GEMMTileConstraint
