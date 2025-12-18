@@ -227,12 +227,11 @@ PULPOptimizer_iDMA = TopologyOptimizer([
     PULPMatMulRequantMergePass(),
     PULPAddRequantMergePass()
 ],
-                                  name = "PULPOptimizer_iDMA")
+                                       name = "PULPOptimizer_iDMA")
 
 # SCHEREMO: stdint is included before pulp_nn_kernels.h because it is supposed to be included in there, but isn't...
 _includeList = [
-    "pmsis.h", "stdint.h", "pulp_nn_kernels.h", "DeeployBasicMath.h", "DeeployPULPMath.h",
-    "bsp/ram.h", "pulp_core.h"
+    "pmsis.h", "stdint.h", "pulp_nn_kernels.h", "DeeployBasicMath.h", "DeeployPULPMath.h", "bsp/ram.h", "pulp_core.h"
 ]
 
 
@@ -278,7 +277,8 @@ class MemoryPULPPlatformWrapper_iDMA(MemoryPlatformWrapper):
 
     untiledOps = ["add"]
 
-    def __init__(self, platform: PULPPlatform_iDMA, memoryHierarchy: MemoryHierarchy, defaultTargetMemoryLevel: MemoryLevel):
+    def __init__(self, platform: PULPPlatform_iDMA, memoryHierarchy: MemoryHierarchy,
+                 defaultTargetMemoryLevel: MemoryLevel):
         assert isinstance(platform, PULPPlatform_iDMA), \
         f"Given platform is not an instance of PULPPlatform_iDMA. Platform type: {type(platform).__name__}"
         super().__init__(platform, memoryHierarchy, defaultTargetMemoryLevel)

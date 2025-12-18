@@ -216,13 +216,13 @@ def mapDeployer(platform: DeploymentPlatform,
             default_channels_first = False
 
         deployer = PULPDeployer_iDMA(graph,
-                                platform,
-                                inputTypes,
-                                loweringOptimizer,
-                                scheduler,
-                                name = name,
-                                default_channels_first = default_channels_first,
-                                deeployStateDir = deeployStateDir)
+                                     platform,
+                                     inputTypes,
+                                     loweringOptimizer,
+                                     scheduler,
+                                     name = name,
+                                     default_channels_first = default_channels_first,
+                                     deeployStateDir = deeployStateDir)
 
     elif isinstance(platform, (PULPPlatform, MemoryPULPPlatform, MemoryPULPPlatformWrapper)):
 

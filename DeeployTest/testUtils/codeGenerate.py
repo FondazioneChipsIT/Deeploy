@@ -199,7 +199,7 @@ def generateTestNetworkImplementation(deployer: NetworkDeployer, verbosityCfg: C
         void InitNetwork(){
         """
     elif isinstance(deployer.Platform, (PULPPlatform, MemoryPULPPlatform, MemoryPULPPlatformWrapper)):
-         retStr += """
+        retStr += """
         }
 
         void InitNetwork(){
