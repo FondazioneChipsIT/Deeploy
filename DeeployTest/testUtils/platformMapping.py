@@ -58,10 +58,10 @@ def mapPlatform(platformName: str) -> Tuple[DeploymentPlatform, bool]:
     elif platformName == "Generic":
         Platform = GenericPlatform()
 
-    elif platformName == "Siracusa" or platformName == "PULPOpen_iDMA":
+    elif platformName == "PULPOpen_iDMA":
         Platform = PULPPlatform_iDMA()
 
-    elif platformName == "PULPOpen":
+    elif platformName == "Siracusa" or platformName == "PULPOpen":
         Platform = PULPPlatform()
 
     elif platformName == "Siracusa_w_neureka":
