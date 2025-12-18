@@ -9,8 +9,9 @@ import numpy as np
 
 from Deeploy.DeeployTypes import CodeGenVerbosity, ConstantBuffer, NetworkDeployer, VariableBuffer
 from Deeploy.Targets.MemPool.Platform import MemPoolPlatform
-from Deeploy.Targets.PULPOpen_iDMA.Platform import MemoryPULPPlatform_iDMA, MemoryPULPPlatformWrapper_iDMA, PULPPlatform_iDMA
 from Deeploy.Targets.PULPOpen.Platform import MemoryPULPPlatform, MemoryPULPPlatformWrapper, PULPPlatform
+from Deeploy.Targets.PULPOpen_iDMA.Platform import MemoryPULPPlatform_iDMA, MemoryPULPPlatformWrapper_iDMA, \
+    PULPPlatform_iDMA
 
 _TEXT_ALIGN = 30
 

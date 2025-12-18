@@ -21,10 +21,11 @@ from Deeploy.Targets.MemPool.Platform import MemPoolOptimizer, MemPoolPlatform
 from Deeploy.Targets.Neureka.Deployer import NeurekaDeployer
 from Deeploy.Targets.Neureka.Platform import MemoryNeurekaPlatform, MemoryNeurekaPlatformWrapper, NeurekaOptimizer, \
     NeurekaPlatform
-from Deeploy.Targets.PULPOpen_iDMA.Deployer import PULPDeployer_iDMA
-from Deeploy.Targets.PULPOpen_iDMA.Platform import MemoryPULPPlatform_iDMA, MemoryPULPPlatformWrapper_iDMA, PULPOptimizer_iDMA, PULPPlatform_iDMA
 from Deeploy.Targets.PULPOpen.Deployer import PULPDeployer
 from Deeploy.Targets.PULPOpen.Platform import MemoryPULPPlatform, MemoryPULPPlatformWrapper, PULPOptimizer, PULPPlatform
+from Deeploy.Targets.PULPOpen_iDMA.Deployer import PULPDeployer_iDMA
+from Deeploy.Targets.PULPOpen_iDMA.Platform import MemoryPULPPlatform_iDMA, MemoryPULPPlatformWrapper_iDMA, \
+    PULPOptimizer_iDMA, PULPPlatform_iDMA
 from Deeploy.Targets.Snitch.Deployer import SnitchDeployer
 from Deeploy.Targets.Snitch.Platform import SnitchOptimizer, SnitchPlatform
 from Deeploy.Targets.SoftHier.Deployer import SoftHierDeployer
