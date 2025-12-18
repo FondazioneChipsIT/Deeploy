@@ -1,3 +1,6 @@
+# Copyright (c) 2025 FondazioneChipsIT
+# SPDX-License-Identifier: Apache-2.0
+
 import math
 from typing import Dict, Tuple
 
