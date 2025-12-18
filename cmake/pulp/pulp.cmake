@@ -2,11 +2,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-
-if(NOT DEFINED ENV{PULP_OPEN_HOME})
-    message(FATAL_ERROR "Environment variable PULP_OPEN_HOME not set.")
-endif()
-
 set(PULP_OPEN_HOME $ENV{PULP_OPEN_HOME})
 set(PULP_OPEN_RUNTIME_HOME $ENV{PULP_SDK_HOME})
 
