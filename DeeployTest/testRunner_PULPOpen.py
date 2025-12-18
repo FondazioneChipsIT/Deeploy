@@ -23,9 +23,14 @@ if __name__ == "__main__":
                         default = False,
                         help = 'Profile Untiled')
 
+    parser.add_argument('--simulator',
+                        dest = 'simulator',
+                        default = 'gvsoc',
+                        choices = ['gvsoc', 'banshee', 'qemu', 'vsim', 'qsim.gui', 'qsim', 'vsim.gui', 'host', 'none'],
+                        help = 'set simulator')
     args = parser.parse_args()
 
-    testRunner = TestRunner(platform = "PULPOpen", simulator = "gvsoc", tiling = False, argument_parser = parser)
+    testRunner = TestRunner(platform = "PULPOpen", simulator = args.simulator, tiling = False, argument_parser = parser)
 
     testRunner.cmake_args += f" -D NUM_CORES={args.cores}"
     testRunner.run()
