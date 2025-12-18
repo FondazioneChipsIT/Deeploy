@@ -15,9 +15,14 @@ if __name__ == "__main__":
                         type = int,
                         default = 8,
                         help = 'Set number of cluster cores')
+    parser.add_argument('--simulator',
+                        dest = 'simulator',
+                        default = 'gvsoc',
+                        choices = ['gvsoc', 'banshee', 'qemu', 'vsim', 'qsim.gui', 'qsim', 'vsim.gui', 'host', 'none'],
+                        help = 'set simulator')
     args = parser.parse_args()
 
-    testRunner = TestRunner(platform = "PULPOpen", simulator = "gvsoc", tiling = True, argument_parser = parser)
+    testRunner = TestRunner(platform = "PULPOpen", simulator = args.simulator, tiling = True, argument_parser = parser)
 
     testRunner.cmake_args += f" -D NUM_CORES={args.cores}"
 
