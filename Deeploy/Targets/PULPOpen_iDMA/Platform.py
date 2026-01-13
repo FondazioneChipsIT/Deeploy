@@ -5,51 +5,50 @@
 import numpy as np
 import onnx_graphsurgeon as gs
 
-from Deeploy.DeeployTypes import ConstantBuffer, DeploymentEngine, DeploymentPlatform, NetworkContext, NodeMapper, \
-    NodeTemplate, StructBuffer, TopologyOptimizer, TransientBuffer, VariableBuffer
+from Deeploy.DeeployTypes import NetworkContext, NodeMapper
 from Deeploy.MemoryLevelExtension.MemoryLevels import MemoryHierarchy, MemoryLevel
-from Deeploy.MemoryLevelExtension.NetworkDeployers.MemoryLevelDeployer import MemoryPlatform, MemoryPlatformWrapper
 from Deeploy.Targets.Generic.Bindings import BasicGEMMBindings, BasicPad1DBindings, BasicPad2DBindings, \
     BasicRQIntegerDivBinding
-from Deeploy.Targets.Generic.Layers import AddLayer, ConcatLayer, ConvLayer, GatherLayer, GELULayer, GEMMLayer, \
-    LayerNormLayer, MatMulLayer, MaxPoolLayer, MulLayer, PadLayer, QuantLayer, ReduceMeanLayer, ReduceSumLayer, \
-    ReluLayer, RequantShiftLayer, ReshapeLayer, RQIntegerDivLayer, RQSiGELULayer, RQSiHardswishLayer, SGDLayer, \
-    SliceLayer, SoftmaxCrossEntropyLossGradLayer, SoftmaxCrossEntropyLossLayer, SoftmaxGradLayer, SoftmaxLayer, \
-    TransposeLayer, iHardswishLayer, iRMSNormLayer
+from Deeploy.Targets.Generic.Layers import AddLayer, ConcatLayer, ConvLayer, GatherLayer, GELUGradLayer, GELULayer, \
+    GEMMLayer, LayerNormGradLayer, LayerNormLayer, MatMulLayer, MaxPoolLayer, MulLayer, PadLayer, QuantLayer, \
+    ReduceMeanLayer, ReduceSumLayer, ReluLayer, RequantShiftLayer, ReshapeLayer, RQIntegerDivLayer, RQSiGELULayer, \
+    RQSiHardswishLayer, SGDLayer, SliceLayer, SoftmaxCrossEntropyLossGradLayer, SoftmaxCrossEntropyLossLayer, \
+    SoftmaxGradLayer, SoftmaxLayer, TransposeLayer, iHardswishLayer, iRMSNormLayer
 from Deeploy.Targets.Generic.Parsers import AddParser, ConcatParser, DequantParser, FlattenParser, GatherParser, \
-    GELUParser, GEMMParser, LayerNormParser, MatMulParser, MaxPool2DParser, MulParser, Pad1DParser, Pad2DParser, \
-    QuantParser, ReduceMeanParser, ReduceSumParser, ReluParser, RequantShiftParser, ReshapeParser, RQAddParser, \
-    RQIntegerDivParser, RQSiGELUParser, RQSiHardswishParser, SGDParser, SliceParser, \
-    SoftmaxCrossEntropyLossGradParser, SoftmaxCrossEntropyLossParser, SoftmaxGradParser, SoftmaxParser, \
-    TransposeParser, UniformRequantShiftParser, UnsqueezeParser, iHardswishParser, iRMSNormParser, iSoftmaxParser
-from Deeploy.Targets.Generic.Templates import AllocateTemplate as BasicAllocateTemplate
-from Deeploy.Targets.Generic.TopologyOptimizationPasses.Passes import DequantPatternPass, IntegerDivRequantMergePass, \
-    MergeConstAddAndRequantPass, MergeTrueIntegerDivRequantShiftPass, QuantPatternPass, RQSSplitPass, \
-    SkipEmptyConcatPass, SkipUnityRequantPass, iGELURequantMergePass, iHardswishRequantMergePass
+    GELUGradParser, GELUParser, GEMMParser, LayerNormGradParser, LayerNormParser, MatMulParser, MaxPool2DParser, \
+    MulParser, Pad1DParser, Pad2DParser, QuantParser, ReduceMeanParser, ReduceSumParser, ReluParser, \
+    RequantShiftParser, ReshapeParser, RQAddParser, RQIntegerDivParser, RQSiGELUParser, RQSiHardswishParser, \
+    SGDParser, SliceParser, SoftmaxCrossEntropyLossGradParser, SoftmaxCrossEntropyLossParser, SoftmaxGradParser, \
+    SoftmaxParser, TransposeParser, UniformRequantShiftParser, UnsqueezeParser, iHardswishParser, iRMSNormParser, \
+    iSoftmaxParser
 from Deeploy.Targets.PULPOpen_iDMA.Bindings import BasicDequantBindings, BasicQuantBindings, PULPConv1DBinding, \
-    PULPDMASliceBindings, PULPDWConv1DBinding, PULPReduceMeanBindings
-from Deeploy.Targets.PULPOpen_iDMA.Layers import PULPRQSConvLayer, PULPRQSGEMMLayer
-from Deeploy.Targets.PULPOpen_iDMA.Parsers import PULPConv1DParser, PULPConv2DParser, PULPDWConv1DParser, \
-    PULPDWConv2DParser, PULPFPConv2DParser, PULPGEMMParser, PULPMatrixVecParser, PULPTallGEMMParser
-from Deeploy.Targets.PULPOpen_iDMA.Templates import AllocateTemplate, FreeTemplate
+    PULPDMASliceBindings, PULPDWConv1DBinding
+from Deeploy.Targets.PULPOpen.Layers import PULPRQSConvLayer, PULPRQSGEMMLayer
+from Deeploy.Targets.PULPOpen.Parsers import PULPConv1DParser, PULPConv2DParser, PULPDWConv1DParser, \
+    PULPDWConv2DParser, PULPFPConv2DParser, PULPFPDWConv2DParser, PULPGEMMParser, PULPMatrixVecParser, \
+    PULPTallGEMMParser
 from Deeploy.Targets.PULPOpen_iDMA.Tiler import PULPAddTilingReadyBindings, PULPConcatTilingReadyBindings, \
-    PULPConv2DTilingReadyBindings, PULPFlattenTilingReadyBindings, PULPFPGELUTilingReadyBindings, \
-    PULPFPGEMMTilingReadyBindings, PULPGatherTilingReadyBindings, PULPiHardswishTilingReadyBindings, \
-    PULPiRMSNormTilingReadyBindings, PULPiRQSGELUTilingReadyBindings, PULPLayernormTilingReadyBindings, \
+    PULPConv2DTilingReadyBindings, PULPDWConv2DTilingReadyBindings, PULPFlattenTilingReadyBindings, \
+    PULPFPGELUGradTilingReadyBindings, PULPFPGELUTilingReadyBindings, PULPFPGEMMTilingReadyBindings, \
+    PULPGatherTilingReadyBindings, PULPiHardswishTilingReadyBindings, PULPiRMSNormTilingReadyBindings, \
+    PULPiRQSGELUTilingReadyBindings, PULPLayernormGradTilingReadyBindings, PULPLayernormTilingReadyBindings, \
     PULPMatMulTilingReadyBindings, PULPMaxPool2DTilingReadyBindings, PULPMulTilingReadyBindings, \
-    PULPReduceSumTilingReadyBindings, PULPReluTilingReadyBindings, PULPRQAddTilingReadyBindings, \
-    PULPRQSConv2DTilingReadyBindings, PULPRQSDWConv2DTilingReadyBindings, PULPRQSGEMMTilingReadyBindings, \
-    PULPRQSiHardswishTilingReadyBindings, PULPRQSMatrixVecTilingReadyBindings, PULPRQSTallGEMMTilingReadyBindings, \
-    PULPRQSTilingReadyBindings, PULPSGDTilingReadyBindings, PULPSoftmaxCrossEntropyGradTilingReadyBindings, \
+    PULPReduceMeanTilingReadyBindings, PULPReduceSumTilingReadyBindings, PULPReluTilingReadyBindings, \
+    PULPRQAddTilingReadyBindings, PULPRQSConv2DTilingReadyBindings, PULPRQSDWConv2DTilingReadyBindings, \
+    PULPRQSGEMMTilingReadyBindings, PULPRQSiHardswishTilingReadyBindings, PULPRQSMatrixVecTilingReadyBindings, \
+    PULPRQSTallGEMMTilingReadyBindings, PULPRQSTilingReadyBindings, PULPSGDTilingReadyBindings, \
+    PULPSliceTilingReadyBindings, PULPSoftmaxCrossEntropyGradTilingReadyBindings, \
     PULPSoftmaxCrossEntropyTilingReadyBindings, PULPSoftmaxGradTilingReadyBindings, PULPSoftmaxTilingReadyBindings, \
     PULPTransposeTilingReadyBindings, PULPUniformRQSTilingReadyBindings
-from Deeploy.Targets.PULPOpen_iDMA.TopologyOptimizationPasses.Passes import PULPAddRequantMergePass, \
-    PULPConvRequantMergePass, PULPGEMMRequantMergePass, PULPMatMulRequantMergePass
+from Deeploy.Targets.PULPOpen.Platform import PULPClusterEngine, PULPPlatform, MemoryPULPPlatform
+from Deeploy.Targets.PULPOpen.Platform import PULPVariableBuffer, PULPTransientBuffer, PULPConstantBuffer, \
+    PULPStructBuffer
 
 RQAddMapper = NodeMapper(RQAddParser(), PULPRQAddTilingReadyBindings)
 AddMapper = NodeMapper(AddParser(), PULPAddTilingReadyBindings)
 FlattenMapper = NodeMapper(FlattenParser(), PULPFlattenTilingReadyBindings)
 GELUMapper = NodeMapper(GELUParser(), PULPFPGELUTilingReadyBindings)
+GELUGradMapper = NodeMapper(GELUGradParser(), PULPFPGELUGradTilingReadyBindings)
 GatherMapper = NodeMapper(GatherParser(), PULPGatherTilingReadyBindings)
 MulMapper = NodeMapper(MulParser(), PULPMulTilingReadyBindings)
 Pad1DMapper = NodeMapper(Pad1DParser(), BasicPad1DBindings)
@@ -61,7 +60,7 @@ UnsqueezeMapper = NodeMapper(UnsqueezeParser(), PULPFlattenTilingReadyBindings)
 RequantShiftMapper = NodeMapper(RequantShiftParser(), PULPRQSTilingReadyBindings)
 UniformRequantShiftMapper = NodeMapper(UniformRequantShiftParser(), PULPUniformRQSTilingReadyBindings)
 
-ReduceMeanMapper = NodeMapper(ReduceMeanParser(), PULPReduceMeanBindings)
+ReduceMeanMapper = NodeMapper(ReduceMeanParser(), PULPReduceMeanTilingReadyBindings)
 ReduceSumMapper = NodeMapper(ReduceSumParser(), PULPReduceSumTilingReadyBindings)
 MatMulMapper = NodeMapper(MatMulParser(), PULPMatMulTilingReadyBindings)
 RQIntegerDivMapper = NodeMapper(RQIntegerDivParser(), [BasicRQIntegerDivBinding])
@@ -71,6 +70,7 @@ Conv1DMapper = NodeMapper(PULPConv1DParser(), [PULPConv1DBinding])
 DWConv1DMapper = NodeMapper(PULPDWConv1DParser(), [PULPDWConv1DBinding])
 FPConv2DMapper = NodeMapper(PULPFPConv2DParser(), PULPConv2DTilingReadyBindings)
 Conv2DMapper = NodeMapper(PULPConv2DParser(), PULPRQSConv2DTilingReadyBindings)
+FPDWConv2DMapper = NodeMapper(PULPFPDWConv2DParser(), PULPDWConv2DTilingReadyBindings)
 DWConv2DMapper = NodeMapper(PULPDWConv2DParser(), PULPRQSDWConv2DTilingReadyBindings)
 GEMMMapper = NodeMapper(PULPGEMMParser(), PULPRQSGEMMTilingReadyBindings)
 FloatGEMMMapper = NodeMapper(GEMMParser(), PULPFPGEMMTilingReadyBindings)
@@ -78,6 +78,7 @@ MatrixVecMapper = NodeMapper(PULPMatrixVecParser(), PULPRQSMatrixVecTilingReadyB
 TallGEMMMapper = NodeMapper(PULPTallGEMMParser(), PULPRQSTallGEMMTilingReadyBindings)
 MaxPool2DMapper = NodeMapper(MaxPool2DParser(), PULPMaxPool2DTilingReadyBindings)
 LayerNormMapper = NodeMapper(LayerNormParser(), PULPLayernormTilingReadyBindings)
+LayerNormGradMapper = NodeMapper(LayerNormGradParser(), PULPLayernormGradTilingReadyBindings)
 ReluMapper = NodeMapper(ReluParser(), PULPReluTilingReadyBindings)
 SoftmaxMapper = NodeMapper(SoftmaxParser(), PULPSoftmaxTilingReadyBindings)
 SoftmaxGradMapper = NodeMapper(SoftmaxGradParser(), PULPSoftmaxGradTilingReadyBindings)
@@ -85,7 +86,9 @@ Softmax_int8_Mapper = NodeMapper(iSoftmaxParser(), PULPSoftmaxTilingReadyBinding
 
 ConcatMapper = NodeMapper(ConcatParser(), PULPConcatTilingReadyBindings)
 
-SliceMapper = NodeMapper(SliceParser(), PULPDMASliceBindings)
+DMASliceMapper = NodeMapper(SliceParser(), PULPDMASliceBindings)
+
+SliceMapper = NodeMapper(SliceParser(), PULPSliceTilingReadyBindings)
 
 iRMSNormMapper = NodeMapper(iRMSNormParser(), PULPiRMSNormTilingReadyBindings)
 
@@ -99,12 +102,14 @@ QuantMapper = NodeMapper(QuantParser(), BasicQuantBindings)
 DequantMapper = NodeMapper(DequantParser(), BasicDequantBindings)
 GEMMDequantMapper = NodeMapper(PULPGEMMParser(), BasicGEMMBindings)
 PULPMapping = {
-    'Conv': ConvLayer([FPConv2DMapper]),
+    'Conv': ConvLayer([FPConv2DMapper, FPDWConv2DMapper]),
     'RequantizedConv': PULPRQSConvLayer([Conv2DMapper, DWConv2DMapper, Conv1DMapper, DWConv1DMapper]),
     'RequantizedGemm': PULPRQSGEMMLayer([MatrixVecMapper, TallGEMMMapper, GEMMMapper]),
     'Gemm': GEMMLayer([FloatGEMMMapper, GEMMDequantMapper]),
     'Gelu': GELULayer([GELUMapper]),
+    'GeluGrad': GELUGradLayer([GELUGradMapper]),
     'LayerNormalization': LayerNormLayer([LayerNormMapper]),
+    'LayerNormalizationGrad': LayerNormGradLayer([LayerNormGradMapper]),
     'MaxPool': MaxPoolLayer([MaxPool2DMapper]),
     'RequantizediGELU': RQSiGELULayer([RQGELU_int8_Mapper]),
     'RQIntegerDiv': RQIntegerDivLayer([RQIntegerDivMapper]),
@@ -125,7 +130,7 @@ PULPMapping = {
     'Squeeze': ReshapeLayer([UnsqueezeMapper]),
     'Transpose': TransposeLayer([TransposeMapper]),
     'Unsqueeze': ReshapeLayer([UnsqueezeMapper]),
-    'Slice': SliceLayer([SliceMapper]),
+    'Slice': SliceLayer([SliceMapper, DMASliceMapper]),
     'RequantizedAdd': AddLayer([RQAddMapper]),
     'Concat': ConcatLayer([ConcatMapper]),
     'iRMSNorm': iRMSNormLayer([iRMSNormMapper]),
@@ -139,112 +144,27 @@ PULPMapping = {
     'SGD': SGDLayer([SGDMapper])
 }
 
-
-class PULPVariableBuffer(VariableBuffer):
-
-    initTemplate = AllocateTemplate.pulpL2InitTemplate
-    # allocTemplate = AllocateTemplate.pulpL2AllocateTemplate
-    # deallocTemplate = FreeTemplate.pulpL2LocalTemplate
-
-    allocTemplate = AllocateTemplate.pulpGenericAllocate
-    deallocTemplate = FreeTemplate.pulpGenericFree
-
-    def _bufferRepresentation(self):
-
-        if hasattr(self, "_memoryLevel"):
-            memoryLevel = self._memoryLevel
-        else:
-            memoryLevel = None
-
-        return {
-            "type": self._instance,
-            "name": self.name,
-            "size": int(np.prod(self.shape)),
-            "_memoryLevel": memoryLevel
-        }
-
-
-class PULPTransientBuffer(TransientBuffer):
-
-    initTemplate = AllocateTemplate.pulpL2InitTemplate
-    allocTemplate = AllocateTemplate.pulpGenericAllocate
-    deallocTemplate = FreeTemplate.pulpGenericFree
-
-    # allocTemplate = AllocateTemplate.pulpL2AllocateTemplate
-    # deallocTemplate = FreeTemplate.pulpL2GlobalTemplate
-
-    def _bufferRepresentation(self):
-
-        if hasattr(self, "_memoryLevel"):
-            memoryLevel = self._memoryLevel
-        else:
-            memoryLevel = None
-
-        return {"type": self._type, "name": self.name, "size": self.size, "_memoryLevel": memoryLevel}
-
-
-class PULPConstantBuffer(ConstantBuffer):
-
-    initTemplate = AllocateTemplate.pulpGenericGlobalInitTemplate
-    allocTemplate = AllocateTemplate.pulpL2GlobalAllocateTemplate
-    deallocTemplate = FreeTemplate.pulpL2GlobalTemplate
-
-    def _bufferRepresentation(self):
-        operatorRepresentation = super()._bufferRepresentation()
-
-        if hasattr(self, "_memoryLevel"):
-            memoryLevel = self._memoryLevel
-        else:
-            memoryLevel = None
-
-        operatorRepresentation["_memoryLevel"] = memoryLevel
-
-        return operatorRepresentation
-
-
-class PULPStructBuffer(StructBuffer):
-
-    initTemplate = BasicAllocateTemplate.referenceStructInitTemplate
-    allocTemplate = BasicAllocateTemplate.referenceStructAllocateTemplate
-    deallocTemplate = NodeTemplate("")
-
-
-PULPOptimizer_iDMA = TopologyOptimizer([
-    QuantPatternPass(),
-    DequantPatternPass(),
-    SkipEmptyConcatPass(),
-    SkipUnityRequantPass(previous_op_regex = "Concat", num_inputs = 2),
-    SkipUnityRequantPass(previous_op_regex = "Reshape|Transpose", num_inputs = 1),
-    SkipUnityRequantPass(previous_op_regex = "Reshape|Transpose", num_inputs = 1),
-    RQSSplitPass(),
-    MergeTrueIntegerDivRequantShiftPass(),
-    IntegerDivRequantMergePass(),
-    iGELURequantMergePass(),
-    iHardswishRequantMergePass(),
-    PULPConvRequantMergePass(),
-    MergeConstAddAndRequantPass(),
-    PULPGEMMRequantMergePass(),
-    PULPMatMulRequantMergePass(),
-    PULPAddRequantMergePass()
-],
-                                       name = "PULPOptimizer_iDMA")
-
 # SCHEREMO: stdint is included before pulp_nn_kernels.h because it is supposed to be included in there, but isn't...
 _includeList = [
     "pmsis.h", "stdint.h", "pulp_nn_kernels.h", "DeeployBasicMath.h", "DeeployPULPMath.h", "bsp/ram.h", "pulp_core.h"
 ]
 
 
-class PULPClusterEngine(DeploymentEngine):
-
-    def __init__(self, name: str, Mapping = PULPMapping, initCode = "", includeList = _includeList) -> None:
-        super().__init__(name, Mapping, initCode, includeList)
-
-
-class PULPPlatform_iDMA(DeploymentPlatform):
+class PULPClusterEngine_iDMA(PULPClusterEngine):
 
     def __init__(self,
-                 engines = [PULPClusterEngine("PULPCluster")],
+                 name: str,
+                 Mapping = PULPMapping,
+                 initCode = "",
+                 includeList = _includeList,
+                 n_cores: int = 8) -> None:
+        super().__init__(name, Mapping, initCode, includeList, n_cores)
+
+
+class PULPPlatform_iDMA(PULPPlatform):
+
+    def __init__(self,
+                 engines = [PULPClusterEngine_iDMA("PULPCluster")],
                  variableBuffer = PULPVariableBuffer,
                  constantBuffer = PULPConstantBuffer,
                  structBuffer = PULPStructBuffer,
@@ -252,36 +172,20 @@ class PULPPlatform_iDMA(DeploymentPlatform):
         super().__init__(engines, variableBuffer, constantBuffer, structBuffer, transientBuffer)
 
 
-class MemoryPULPPlatform_iDMA(MemoryPlatform):
+class MemoryPULPPlatform_iDMA(MemoryPULPPlatform):
 
     untiledOps = ["add"]
 
     def __init__(self,
                  memoryHierarchy: MemoryHierarchy,
                  defaultTargetMemoryLevel: MemoryLevel,
-                 engines = [PULPClusterEngine("PULPCluster")],
+                 engines = [PULPClusterEngine_iDMA("PULPCluster")],
                  variableBuffer = PULPVariableBuffer,
                  constantBuffer = PULPConstantBuffer,
                  structBuffer = PULPStructBuffer,
                  transientBuffer = PULPTransientBuffer) -> None:
         super().__init__(memoryHierarchy, defaultTargetMemoryLevel, engines, variableBuffer, constantBuffer,
                          structBuffer, transientBuffer)
-
-    def getTargetMemoryLevel(self, node: gs.Node, tensorName: str, ctxt: NetworkContext) -> str:
-        if node.op in self.untiledOps:
-            return ctxt.lookup(tensorName)._memoryLevel
-        return super().getTargetMemoryLevel(node, tensorName, ctxt)
-
-
-class MemoryPULPPlatformWrapper_iDMA(MemoryPlatformWrapper):
-
-    untiledOps = ["add"]
-
-    def __init__(self, platform: PULPPlatform_iDMA, memoryHierarchy: MemoryHierarchy,
-                 defaultTargetMemoryLevel: MemoryLevel):
-        assert isinstance(platform, PULPPlatform_iDMA), \
-        f"Given platform is not an instance of PULPPlatform_iDMA. Platform type: {type(platform).__name__}"
-        super().__init__(platform, memoryHierarchy, defaultTargetMemoryLevel)
 
     def getTargetMemoryLevel(self, node: gs.Node, tensorName: str, ctxt: NetworkContext) -> str:
         if node.op in self.untiledOps:
