@@ -22,7 +22,10 @@ if __name__ == "__main__":
                         help = 'set simulator')
     args = parser.parse_args()
 
-    testRunner = TestRunner(platform = "PULPOpen_iDMA", simulator = args.simulator, tiling = True, argument_parser = parser)
+    testRunner = TestRunner(platform = "PULPOpen_iDMA",
+                            simulator = args.simulator,
+                            tiling = True,
+                            argument_parser = parser)
 
     testRunner.cmake_args += f" -D NUM_CORES={args.cores}"
 

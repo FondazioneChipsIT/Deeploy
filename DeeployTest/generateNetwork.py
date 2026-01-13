@@ -21,7 +21,6 @@ from Deeploy.DeeployTypes import _NoVerbosity
 from Deeploy.Logging import DEFAULT_LOGGER as log
 from Deeploy.Targets.CortexM.Platform import CMSISPlatform
 from Deeploy.Targets.PULPOpen.Platform import PULPClusterEngine, PULPPlatform
-from Deeploy.Targets.PULPOpen_iDMA.Platform import PULPPlatform_iDMA
 
 
 def generateNetwork(args):
