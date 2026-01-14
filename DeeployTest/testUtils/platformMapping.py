@@ -23,9 +23,7 @@ from Deeploy.Targets.Neureka.Platform import MemoryNeurekaPlatform, MemoryNeurek
     NeurekaPlatform
 from Deeploy.Targets.PULPOpen.Deployer import PULPDeployer
 from Deeploy.Targets.PULPOpen.Platform import MemoryPULPPlatform, MemoryPULPPlatformWrapper, PULPOptimizer, PULPPlatform
-from Deeploy.Targets.PULPOpen_iDMA.Deployer import PULPDeployer_iDMA
-from Deeploy.Targets.PULPOpen_iDMA.Platform import MemoryPULPPlatform_iDMA, MemoryPULPPlatformWrapper_iDMA, \
-    PULPOptimizer_iDMA, PULPPlatform_iDMA
+from Deeploy.Targets.PULPOpen_iDMA.Platform import PULPPlatform_iDMA
 from Deeploy.Targets.Snitch.Deployer import SnitchDeployer
 from Deeploy.Targets.Snitch.Platform import SnitchOptimizer, SnitchPlatform
 from Deeploy.Targets.SoftHier.Deployer import SoftHierDeployer
@@ -85,9 +83,7 @@ def mapPlatform(platformName: str) -> Tuple[DeploymentPlatform, bool]:
 
 def setupMemoryPlatform(platform: DeploymentPlatform, memoryHierarchy: MemoryHierarchy,
                         defaultTargetMemoryLevel: MemoryLevel) -> Union[MemoryPlatform, MemoryPlatformWrapper]:
-    if isinstance(platform, PULPPlatform_iDMA):
-        return MemoryPULPPlatformWrapper_iDMA(platform, memoryHierarchy, defaultTargetMemoryLevel)
-    elif isinstance(platform, PULPPlatform):
+    if isinstance(platform, PULPPlatform):
         return MemoryPULPPlatformWrapper(platform, memoryHierarchy, defaultTargetMemoryLevel)
     elif isinstance(platform, NeurekaPlatform):
         weightMemoryLevel = memoryHierarchy.memoryLevels["WeightMemory_SRAM"] \
@@ -207,23 +203,6 @@ def mapDeployer(platform: DeploymentPlatform,
                                    name = name,
                                    default_channels_first = default_channels_first,
                                    deeployStateDir = deeployStateDir)
-
-    elif isinstance(platform, (PULPPlatform_iDMA, MemoryPULPPlatform_iDMA, MemoryPULPPlatformWrapper_iDMA)):
-
-        if loweringOptimizer is None:
-            loweringOptimizer = PULPOptimizer_iDMA
-
-        if default_channels_first is None:
-            default_channels_first = False
-
-        deployer = PULPDeployer_iDMA(graph,
-                                     platform,
-                                     inputTypes,
-                                     loweringOptimizer,
-                                     scheduler,
-                                     name = name,
-                                     default_channels_first = default_channels_first,
-                                     deeployStateDir = deeployStateDir)
 
     elif isinstance(platform, (PULPPlatform, MemoryPULPPlatform, MemoryPULPPlatformWrapper)):
 

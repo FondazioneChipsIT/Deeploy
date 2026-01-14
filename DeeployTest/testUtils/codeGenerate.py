@@ -10,8 +10,6 @@ import numpy as np
 from Deeploy.DeeployTypes import CodeGenVerbosity, ConstantBuffer, NetworkDeployer, VariableBuffer
 from Deeploy.Targets.MemPool.Platform import MemPoolPlatform
 from Deeploy.Targets.PULPOpen.Platform import MemoryPULPPlatform, MemoryPULPPlatformWrapper, PULPPlatform
-from Deeploy.Targets.PULPOpen_iDMA.Platform import MemoryPULPPlatform_iDMA, MemoryPULPPlatformWrapper_iDMA, \
-    PULPPlatform_iDMA
 
 _TEXT_ALIGN = 30
 
@@ -126,13 +124,7 @@ def generateTestNetworkHeader(deployer: NetworkDeployer) -> str:
     #include <stdlib.h>
     """
     retStr += deployer.generateIncludeString()
-    if isinstance(deployer.Platform, (PULPPlatform_iDMA, MemoryPULPPlatform_iDMA, MemoryPULPPlatformWrapper_iDMA)):
-        retStr += """
-        void RunNetwork();
-        void InitNetwork();
-
-        """
-    elif isinstance(deployer.Platform, (PULPPlatform, MemoryPULPPlatform, MemoryPULPPlatformWrapper)):
+    if isinstance(deployer.Platform, (PULPPlatform, MemoryPULPPlatform, MemoryPULPPlatformWrapper)):
         retStr += """
         void RunNetwork();
         void InitNetwork();
@@ -176,11 +168,6 @@ def generateTestNetworkImplementation(deployer: NetworkDeployer, verbosityCfg: C
         retStr += """
         void RunNetwork(__attribute__((unused)) uint32_t core_id, __attribute__((unused)) uint32_t numThreads){
         """
-    elif isinstance(deployer.Platform, (PULPPlatform_iDMA, MemoryPULPPlatform_iDMA, MemoryPULPPlatformWrapper_iDMA)):
-        retStr += """
-        void RunNetwork(){
-        """
-        retStr += deployer.generateInferenceInitializationCode()
     elif isinstance(deployer.Platform, (PULPPlatform, MemoryPULPPlatform, MemoryPULPPlatformWrapper)):
         retStr += """
         void RunNetwork(){
@@ -193,13 +180,7 @@ def generateTestNetworkImplementation(deployer: NetworkDeployer, verbosityCfg: C
         retStr += deployer.generateInferenceInitializationCode()
 
     retStr += deployer.generateFunction(verbosityCfg)
-    if isinstance(deployer.Platform, (PULPPlatform_iDMA, MemoryPULPPlatform_iDMA, MemoryPULPPlatformWrapper_iDMA)):
-        retStr += """
-        }
-
-        void InitNetwork(){
-        """
-    elif isinstance(deployer.Platform, (PULPPlatform, MemoryPULPPlatform, MemoryPULPPlatformWrapper)):
+    if isinstance(deployer.Platform, (PULPPlatform, MemoryPULPPlatform, MemoryPULPPlatformWrapper)):
         retStr += """
         }
 
