@@ -73,6 +73,6 @@ class iDMA(AsyncDma):
             operatorRepresentation["length"] = shape[1]
             operatorRepresentation["strideExt"] = strideExt[0]
             operatorRepresentation["strideLoc"] = strideLoc[0]
-            operatorRepresentation["num_reps"] = iDMA_transfer_size / shape[1]
+            operatorRepresentation["num_reps"] = iDMA_transfer_size // shape[1]
 
         return operatorRepresentation
