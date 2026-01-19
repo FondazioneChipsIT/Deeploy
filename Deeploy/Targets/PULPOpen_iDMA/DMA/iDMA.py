@@ -34,13 +34,23 @@ class iDMA(AsyncDma):
 
         # Here are some assertions on the iDMA transfer parameters
         transferRank = len(shape)
-        assert strideExt[
-            -1] == 1, "Mchan supports only contigous transfers of the innermost dimension for external memory"
+
+        assert transferRank == 1 or transferRank == 2, "Only 1D and 2D transfers are supported for now"
+
         if transferRank == 1:
-            assert strideLoc[0] == 1, "Mchan supports only contigous transfers for local memory"
-        else:
-            assert strideLoc[0] == shape[1] and strideLoc[
-                1] == 1, "Mchan supports only contigous transfers for local memory"
+           length = shape[0]
+        elif transferRank == 2:
+           length = shape[1]
+
+        iDMA_transfer_size = math.prod(shape)
+
+        assert iDMA_transfer_size <= 2**16, (
+            "iDMA transfer size should be representable with 16 bits, "
+            f"current number of bits required is {math.ceil(math.log2(iDMA_transfer_size))}")
+
+        if transferRank == 2:
+            assert strideExt[0] >= length, "External stride must be at least equal to the length"
+            assert strideLoc[0] >= length, "Local stride must be at least equal to the length"
 
     def transferOpRepr(self, externalBuffer: VariableBuffer, localBuffer: VariableBuffer, shape: Tuple[int, ...],
                        strideExt: Tuple[int, ...], strideLoc: Tuple[int, ...], direction: DmaDirection,
@@ -52,10 +62,6 @@ class iDMA(AsyncDma):
         operatorRepresentation["direction"] = 1 if direction == "ExternalToLocal" else 0
 
         iDMA_transfer_size = math.prod(shape)
-        assert iDMA_transfer_size <= 2**16, (
-            "The Dma transfer size for iDMA should be representable with 16 bits, "
-            f"current number of bits required is {math.ceil(math.log2(iDMA_transfer_size))}")
-
 
         if transferRank == 1:
             operatorRepresentation["length"] = shape[0]
@@ -64,6 +70,5 @@ class iDMA(AsyncDma):
             operatorRepresentation["strideExt"] = strideExt[0]
             operatorRepresentation["strideLoc"] = strideLoc[0]
             operatorRepresentation["num_reps"] = iDMA_transfer_size / shape[1]
-
 
         return operatorRepresentation
