@@ -19,8 +19,12 @@ class iDMAChannelFuture(Future):
 class iDMA(AsyncDma):
 
     _transferTemplates = {
-        1: NodeTemplate("pulp_idma_transfer_1d_and_wait(${direction}, ${ext}, ${loc}, ${length}); "),
-        2: NodeTemplate("pulp_idma_transfer_2d_and_wait(${direction}, ${ext}, ${loc}, ${length}, ${strideExt}, ${strideLoc}, ${num_reps});")
+        1:
+            NodeTemplate("pulp_idma_transfer_1d_and_wait(${direction}, ${ext}, ${loc}, ${length}); "),
+        2:
+            NodeTemplate(
+                "pulp_idma_transfer_2d_and_wait(${direction}, ${ext}, ${loc}, ${length}, ${strideExt}, ${strideLoc}, ${num_reps});"
+            )
     }
     _waitingStrategy = DirectionWaitingStrategy(iDMAChannelFuture, "channel_id")
 
@@ -38,9 +42,9 @@ class iDMA(AsyncDma):
         assert transferRank == 1 or transferRank == 2, "Only 1D and 2D transfers are supported for now"
 
         if transferRank == 1:
-           length = shape[0]
+            length = shape[0]
         elif transferRank == 2:
-           length = shape[1]
+            length = shape[1]
 
         iDMA_transfer_size = math.prod(shape)
 
