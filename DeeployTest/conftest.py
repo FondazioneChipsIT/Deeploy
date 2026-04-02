@@ -72,6 +72,8 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "pulpopen_tiled: mark test as a PULPOpen platform test (tiled)")
     config.addinivalue_line("markers", "pulpopen_idma: mark test as a PULPOpen_iDMA platform test (untiled)")
     config.addinivalue_line("markers", "pulpopen_idma_tiled: mark test as a PULPOpen_iDMA platform test (tiled)")
+    config.addinivalue_line(
+        "markers", "pulpopen_idma_neureka_tiled: mark test as a PULPOpen_iDMA + Neureka platform test (tiled)")
     config.addinivalue_line("markers", "kernels: mark test as a kernel test (individual operators)")
     config.addinivalue_line("markers", "models: mark test as a model test (full networks)")
     config.addinivalue_line("markers", "singlebuffer: mark test as single-buffer configuration")
