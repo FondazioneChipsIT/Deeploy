@@ -26,7 +26,7 @@ from Deeploy.Targets.Neureka.Platform import MemoryNeurekaPlatform, MemoryNeurek
 from Deeploy.Targets.PULPOpen.Deployer import PULPDeployer
 from Deeploy.Targets.PULPOpen.Platform import MemoryPULPPlatform, MemoryPULPPlatformWrapper, PULPOptimizer, PULPPlatform
 from Deeploy.Targets.PULPOpen_iDMA.Platform import PULPPlatform_iDMA
-from Deeploy.Targets.PULPOpen_iDMA_Neureka.Platform import NeurekaPlatform_iDMA
+from Deeploy.Targets.NeurekaSCARV.Platform import NeurekaSCARVPlatform
 from Deeploy.Targets.Snitch.Deployer import SnitchDeployer
 from Deeploy.Targets.Snitch.Platform import SnitchOptimizer, SnitchPlatform
 from Deeploy.Targets.SoftHier.Deployer import SoftHierDeployer
@@ -67,7 +67,7 @@ def mapPlatform(platformName: str) -> Tuple[DeploymentPlatform, bool]:
         Platform = PULPPlatform_iDMA()
 
     elif platformName == "PULPOpen_iDMA_Neureka":
-        Platform = NeurekaPlatform_iDMA()
+        Platform = NeurekaSCARVPlatform()
 
     elif platformName == "Siracusa" or platformName == "PULPOpen":
         Platform = PULPPlatform()

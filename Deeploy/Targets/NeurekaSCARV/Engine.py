@@ -4,17 +4,17 @@
 
 from typing import List
 
-import onnx_graphsurgeon as gs
-
-from Deeploy.DeeployTypes import DeploymentEngine, NodeMapper
+from Deeploy.DeeployTypes import NodeMapper
 from Deeploy.Targets.Generic.Layers import ConvLayer
-from Deeploy.Targets.Neureka.Config import NeurekaConfig, _DEFAULT_NEUREKA_CONFIG
+from Deeploy.Targets.Neureka.Engine import NeurekaEngine
 from Deeploy.Targets.Neureka.Parsers import NeurekaDenseConv2DParser, NeurekaDWConv2DParser, NeurekaPWConv2DParser, \
     NeurekaRQSDenseConv2DParser, NeurekaRQSDWConv2DParser, NeurekaRQSPWConv2DParser
 from Deeploy.Targets.Neureka.Tiler import NeurekaDenseConv2DTilingReadyBindings, NeurekaDWConv2DTilingReadyBindings, \
     NeurekaPWConv2DTilingReadyBindings, NeurekaRQSDenseConv2DTilingReadyBindings, \
     NeurekaRQSDWConv2DTilingReadyBindings, NeurekaRQSPWConv2DTilingReadyBindings
 from Deeploy.Targets.PULPOpen.Layers import PULPRQSConvLayer
+from Deeploy.Targets.Neureka.Config import NeurekaConfig
+from Deeploy.Targets.NeurekaSCARV.Config import NEUREKA_SCARV_CONFIG
 
 NeurekaRqntPWConv2DMapper = NodeMapper(NeurekaRQSPWConv2DParser(), NeurekaRQSPWConv2DTilingReadyBindings)
 NeurekaPWConv2DMapper = NodeMapper(NeurekaPWConv2DParser(), NeurekaPWConv2DTilingReadyBindings)
@@ -32,15 +32,17 @@ NeurekaMapping = {
         ConvLayer([NeurekaPWConv2DMapper, NeurekaDWConv2DMapper, NeurekaDenseConv2DMapper]),
 }
 
+# TOFIX
 _includeList = ["pulp_nnx_neureka.h", "pulp_nnx_util.h", "neureka_siracusa_bsp.h", "neureka.h", "neureka_task.h"]
 
+# TOFIX
 _neurekaInitCode = r"""
 neureka_siracusa_conf_t conf = {.max_stall = 8};
 neureka_nnx_init(neureka_siracusa_get_dev(), &conf);
 """
 
 
-class NeurekaEngine(DeploymentEngine):
+class NeurekaSCARVEngine(NeurekaEngine):
 
     def __init__(self,
                  name: str,
@@ -49,39 +51,5 @@ class NeurekaEngine(DeploymentEngine):
                  includeList: List[str] = _includeList,
                  enable3x3: bool = False,
                  enableStrides: bool = False,
-                 config: NeurekaConfig = _DEFAULT_NEUREKA_CONFIG,
-                 ) -> None:
-        super().__init__(name, Mapping, initCode, includeList)
-
-        self.enable3x3 = enable3x3
-        self.enableStrides = enableStrides
-        self.config = config
-
-    def isDenseConv(self, node) -> bool:
-        return node.op in ["Conv", "RequantizedConv"] and \
-            isinstance(node.inputs[1], gs.Constant) and \
-            node.attrs['kernel_shape'] == [3, 3] and \
-            node.attrs['dilations'] == [1, 1] and \
-            node.attrs['group'] == 1 and \
-            (node.attrs['strides'] == [1, 1] or self.enableStrides)
-
-    def isPWConv(self, node) -> bool:
-        return node.op in ["Conv", "RequantizedConv"] and \
-            isinstance(node.inputs[1], gs.Constant) and \
-            node.attrs['kernel_shape'] == [1, 1] and \
-            node.attrs['dilations'] == [1, 1] and \
-            (node.attrs['strides'] == [1, 1] or self.enableStrides)
-
-    def isDWConv(self, node) -> bool:
-        return node.op in ["Conv", "RequantizedConv"] and \
-            isinstance(node.inputs[1], gs.Constant) and \
-            node.attrs['kernel_shape'] == [3, 3] and \
-            node.attrs['dilations'] == [1, 1] and \
-            node.attrs['group'] != 1 and \
-            (node.attrs['strides'] == [1, 1] or self.enableStrides)
-
-    def canExecute(self, node: gs.Node) -> bool:
-        if self.enable3x3:
-            return self.isPWConv(node) or self.isDWConv(node) or self.isDenseConv(node)
-        else:
-            return self.isPWConv(node)
+                 config: NeurekaConfig = NEUREKA_SCARV_CONFIG) -> None:
+        super().__init__(name, Mapping, initCode, includeList, enable3x3, enableStrides, config)

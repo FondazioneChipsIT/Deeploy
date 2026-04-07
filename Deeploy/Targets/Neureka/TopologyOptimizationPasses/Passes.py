@@ -19,9 +19,12 @@ from Deeploy.CommonExtensions.OptimizationPasses.TopologyOptimizationPasses.Lowe
 from Deeploy.EngineExtension.OptimizationPasses.TopologyOptimizationPasses.EngineColoringPasses import \
     EngineDiscolorationPass
 from Deeploy.Targets.Generic.TopologyOptimizationPasses.Passes import ReshapeConstOptPass, ReshapeMergePass
+from Deeploy.Targets.Neureka.Config import NeurekaConfig, _DEFAULT_NEUREKA_CONFIG
 
 
-def _weightEncode(weight: npt.NDArray[np.uint8], bits: int, depthwise: bool = False) -> npt.NDArray[np.uint8]:
+def _weightEncode(weight: npt.NDArray[np.uint8],
+                  bits: int, depthwise: bool = False,
+                  neurekaConfig: NeurekaConfig = _DEFAULT_NEUREKA_CONFIG) -> npt.NDArray[np.uint8]:
     """Unroll weight into expected memory format
 
     Expected weight shape is (cout, cin, H, W).
@@ -30,15 +33,16 @@ def _weightEncode(weight: npt.NDArray[np.uint8], bits: int, depthwise: bool = Fa
       - 1x1: (cout, cinMajor, Bits x H x W x cinMinor_1x1 packed into Weight Bandwidth bits),
     where cinMajor is the ceil(cin / cin subtile <mode>) and cinMinor has to be padded with 0 to cin subtile <mode>.
     """
-    _NEUREKA_WEIGHT_BANDWIDTH = 256
-    _NEUREKA_CIN_SUBTILE_1x1 = 32
-    _NEUREKA_CIN_SUBTILE_3x3 = 28
+    _WEIGHT_BANDWIDTH_1x1 = neurekaConfig.weight_bandwidth_1x1
+    _WEIGHT_BANDWIDTH_3x3 = neurekaConfig.weight_bandwidth_3x3
+    _CIN_SUBTILE_1x1  = neurekaConfig.cin_subtile_1x1
+    _CIN_SUBTILE_3x3  = neurekaConfig.cin_subtile_3x3
 
     if depthwise:
         weight = weight.transpose(1, 0, 2, 3)  # Swap cout and cin
 
     cout, cin, height, width = weight.shape
-    cinSubtile = (_NEUREKA_CIN_SUBTILE_3x3 if height == 3 else _NEUREKA_CIN_SUBTILE_1x1)
+    cinSubtile = (_CIN_SUBTILE_3x3 if height == 3 else _CIN_SUBTILE_1x1)
 
     # Pad cin to be divisible with CIN_SUBTILE
     if cin % cinSubtile != 0:
@@ -71,10 +75,11 @@ def _weightEncode(weight: npt.NDArray[np.uint8], bits: int, depthwise: bool = Fa
         # (-1, Weight Bandwidth)
         weight = np.pad(
             weight,
-            ((0, 0), (0, _NEUREKA_WEIGHT_BANDWIDTH - weight.shape[-1])),
+            ((0, 0), (0, _WEIGHT_BANDWIDTH_3x3 - weight.shape[-1])),
             "constant",
             constant_values = 0,
         )
+        weightBandwidthBytes = int(np.ceil(_WEIGHT_BANDWIDTH_3x3 / 8))
     elif height == 1 and width == 1:
         # Tile cinSubtile into tiles of size 4
         # (cout, cinMajor, Bits, Flattened spatial, cinSubtileMajor, cinSubtileTile)
@@ -92,11 +97,11 @@ def _weightEncode(weight: npt.NDArray[np.uint8], bits: int, depthwise: bool = Fa
         # (cout, cinMajor, Flattened spatial, cinSubtileMajor, PaddedBits, cinSubtileTile)
         weight = weight.transpose(0, 1, 3, 4, 2, 5)
         # (-1, Weight Bandwidth)
-        weight = weight.reshape(cout * cinMajor, _NEUREKA_WEIGHT_BANDWIDTH)  # cout*cinMajor, 256b
+        weight = weight.reshape(cout * cinMajor, _WEIGHT_BANDWIDTH_1x1)  # cout*cinMajor, 256b
+        weightBandwidthBytes = int(np.ceil(_WEIGHT_BANDWIDTH_1x1 / 8))
 
     # Prepare for packing
     # (-1, Weight Bandwidth Bytes, 8)
-    weightBandwidthBytes = int(np.ceil(_NEUREKA_WEIGHT_BANDWIDTH / 8))
     weight = np.stack(np.split(weight, weightBandwidthBytes, axis = -1), axis = -2)
 
     # Pack bits
@@ -113,7 +118,7 @@ def _weightEncode(weight: npt.NDArray[np.uint8], bits: int, depthwise: bool = Fa
 
 
 def _neureka_adjust_weight_memory_layout_fun(graph: gs.Graph, match: Match, name: str, default_channels_first: bool,
-                                             neurekaEngineName: str):
+                                             neurekaEngineName: str, neurekaConfig: NeurekaConfig):
     matched_nodes = list(match.nodes_map.values())
     node = matched_nodes[0]
 
@@ -143,10 +148,8 @@ def _neureka_adjust_weight_memory_layout_fun(graph: gs.Graph, match: Match, name
         values = values.transpose(0, 3, 1, 2)
 
     bits = 8  # Support only 8 bit weights for now
-    if node.attrs['group'] == 1:
-        weightTensor.values = _weightEncode(values.astype(np.uint8), bits, depthwise = False)
-    else:
-        weightTensor.values = _weightEncode(values.astype(np.uint8), bits, depthwise = True)
+    depthwise = node.attrs['group'] != 1
+    weightTensor.values = _weightEncode(values.astype(np.uint8), bits, depthwise = depthwise, neurekaConfig = neurekaConfig)
     weightTensor.name = f"{name}_{weightTensor.name}"
 
     return graph
@@ -155,7 +158,7 @@ def _neureka_adjust_weight_memory_layout_fun(graph: gs.Graph, match: Match, name
 @contextagnostic
 class NeurekaAdjustWeightMemoryLayoutPass(ReplaceSequentialPatternPass):
 
-    def __init__(self, default_channels_first: bool, neurekaEngineName: str):
+    def __init__(self, default_channels_first: bool, neurekaEngineName: str, neurekaConfig: NeurekaConfig = _DEFAULT_NEUREKA_CONFIG):
         graph = gs.Graph()
         _input = gs.Variable(name = 'input_1')
         output = graph.layer(inputs = [_input], outputs = ['out'], op = 'RequantizedConv|Conv', name = 'node')
@@ -166,7 +169,9 @@ class NeurekaAdjustWeightMemoryLayoutPass(ReplaceSequentialPatternPass):
             graph,
             partial(_neureka_adjust_weight_memory_layout_fun,
                     default_channels_first = default_channels_first,
-                    neurekaEngineName = neurekaEngineName), "_NEUREKA_ADJUST_WEIGHT_MEMORY_LAYOUT_PASS",
+                    neurekaEngineName = neurekaEngineName,
+                    neurekaConfig = neurekaConfig),
+            "_NEUREKA_ADJUST_WEIGHT_MEMORY_LAYOUT_PASS",
             NonBranchingMatcher(regex_op = True))
 
 
@@ -303,8 +308,11 @@ class ConvEngineDiscolorationPass(EngineDiscolorationPass):
 @contextagnostic
 class NeurekaOptimizationPass(SequentialPass):
 
-    def __init__(self, default_channels_first: bool, neurekaEngineName: str):
-        super().__init__(NeurekaAdjustWeightMemoryLayoutPass(default_channels_first, neurekaEngineName),
+    def __init__(self,
+                 default_channels_first: bool,
+                 neurekaEngineName: str,
+                 neurekaConfig: NeurekaConfig = _DEFAULT_NEUREKA_CONFIG):
+        super().__init__(NeurekaAdjustWeightMemoryLayoutPass(default_channels_first, neurekaEngineName, neurekaConfig),
                          NeurekaReshapePointwiseConvolutionPass(default_channels_first, neurekaEngineName),
                          ReshapeMergePass(),
                          ReshapeConstOptPass(),

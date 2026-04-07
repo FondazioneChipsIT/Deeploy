@@ -12,6 +12,7 @@ from Deeploy.CommonExtensions.OptimizationPasses.TopologyOptimizationPasses.Lowe
 from Deeploy.DeeployTypes import DeploymentPlatform, TopologyOptimizer
 from Deeploy.Targets.Neureka.TopologyOptimizationPasses.Passes import ConvEngineDiscolorationPass, \
     NeurekaOptimizationPass
+from Deeploy.Targets.Neureka.Engine import NeurekaEngine
 from Deeploy.Targets.PULPOpen.Deployer import PULPDeployer
 
 
@@ -30,12 +31,14 @@ class NeurekaDeployer(PULPDeployer):
         super().__init__(graph, deploymentPlatform, inputTypes, loweringOptimizer, scheduler, name,
                          default_channels_first, deeployStateDir, inputOffsets)
 
-        if self.Platform.engines[0].enable3x3:
+        neurekaEngine = next(e for e in self.Platform.engines if isinstance(e, NeurekaEngine))
+
+        if neurekaEngine.enable3x3:
             for idx in range(len(self.loweringOptimizer.passes)):
                 if isinstance(self.loweringOptimizer.passes[idx], PULPNCHWtoNHWCPass):
                     self.loweringOptimizer.passes[idx] = NCHWtoNHWCPass(self.default_channels_first)
 
         self.loweringOptimizer.passes += [
             ConvEngineDiscolorationPass(),
-            NeurekaOptimizationPass(self.default_channels_first, "Neureka")
+            NeurekaOptimizationPass(self.default_channels_first, "Neureka", neurekaConfig=neurekaEngine.config)
         ]
