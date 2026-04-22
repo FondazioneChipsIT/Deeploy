@@ -16,6 +16,7 @@ from Deeploy.Targets.CortexM.Deployer import CMSISDeployer
 from Deeploy.Targets.CortexM.Platform import CMSISOptimizer, CMSISPlatform
 from Deeploy.Targets.GAP9.Deployer import GAP9Deployer
 from Deeploy.Targets.GAP9.Platform import GAP9Platform, MemoryGAP9Platform, MemoryGAP9PlatformWrapper
+from Deeploy.Targets.NeurekaSCARV.Platform import NeurekaSCARVPlatform
 from Deeploy.Targets.Generic.Deployer import GenericDeployer
 from Deeploy.Targets.Generic.Platform import GenericOptimizer, GenericPlatform
 from Deeploy.Targets.MemPool.Deployer import MemPoolDeployer
@@ -26,7 +27,6 @@ from Deeploy.Targets.Neureka.Platform import MemoryNeurekaPlatform, MemoryNeurek
 from Deeploy.Targets.PULPOpen.Deployer import PULPDeployer
 from Deeploy.Targets.PULPOpen.Platform import MemoryPULPPlatform, MemoryPULPPlatformWrapper, PULPOptimizer, PULPPlatform
 from Deeploy.Targets.PULPOpen_iDMA.Platform import PULPPlatform_iDMA
-from Deeploy.Targets.NeurekaSCARV.Platform import NeurekaSCARVPlatform
 from Deeploy.Targets.Snitch.Deployer import SnitchDeployer
 from Deeploy.Targets.Snitch.Platform import SnitchOptimizer, SnitchPlatform
 from Deeploy.Targets.SoftHier.Deployer import SoftHierDeployer
