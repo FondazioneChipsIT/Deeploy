@@ -9,9 +9,10 @@ from Deeploy.Targets.Generic.Layers import ConvLayer
 from Deeploy.Targets.Neureka.Engine import NeurekaEngine
 from Deeploy.Targets.Neureka.Parsers import NeurekaDenseConv2DParser, NeurekaDWConv2DParser, NeurekaPWConv2DParser, \
     NeurekaRQSDenseConv2DParser, NeurekaRQSDWConv2DParser, NeurekaRQSPWConv2DParser
-from Deeploy.Targets.Neureka.Tiler import NeurekaDenseConv2DTilingReadyBindings, NeurekaDWConv2DTilingReadyBindings, \
-    NeurekaPWConv2DTilingReadyBindings, NeurekaRQSDenseConv2DTilingReadyBindings, \
-    NeurekaRQSDWConv2DTilingReadyBindings, NeurekaRQSPWConv2DTilingReadyBindings
+from Deeploy.Targets.NeurekaSCARV.Tiler import NeurekaDenseConv2DTilingReadyBindings, \
+    NeurekaDWConv2DTilingReadyBindings, NeurekaPWConv2DTilingReadyBindings, \
+    NeurekaRQSDenseConv2DTilingReadyBindings, NeurekaRQSDWConv2DTilingReadyBindings, \
+    NeurekaRQSPWConv2DTilingReadyBindings
 from Deeploy.Targets.PULPOpen.Layers import PULPRQSConvLayer
 from Deeploy.Targets.Neureka.Config import NeurekaConfig
 from Deeploy.Targets.NeurekaSCARV.Config import NEUREKA_SCARV_CONFIG
@@ -33,12 +34,13 @@ NeurekaMapping = {
 }
 
 # TOFIX
-_includeList = ["pulp_nnx_neureka.h", "pulp_nnx_util.h", "neureka_siracusa_bsp.h", "neureka.h", "neureka_task.h"]
+_includeList = ["pulp_nnx_neureka.h", "pulp_nnx_util.h", "neureka_bsp.h", "neureka.h", "neureka_task.h"]
 
-# TOFIX
 _neurekaInitCode = r"""
-neureka_siracusa_conf_t conf = {.max_stall = 8};
-neureka_nnx_init(neureka_siracusa_get_dev(), &conf);
+neureka_dev_t *dev = neureka_bsp_get_dev();
+neureka_bsp_conf_t conf = {.max_stall = 8};
+neureka_nnx_init(dev, &conf);
+neureka_nnx_dispatch_wait(dev);
 """
 
 
