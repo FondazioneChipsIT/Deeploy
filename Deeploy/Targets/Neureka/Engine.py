@@ -32,11 +32,11 @@ NeurekaMapping = {
         ConvLayer([NeurekaPWConv2DMapper, NeurekaDWConv2DMapper, NeurekaDenseConv2DMapper]),
 }
 
-_includeList = ["pulp_nnx_neureka.h", "pulp_nnx_util.h", "neureka_siracusa_bsp.h", "neureka.h", "neureka_task.h"]
+_includeList = ["pulp_nnx_neureka.h", "pulp_nnx_util.h", "neureka_bsp.h", "neureka.h", "neureka_task.h"]
 
 _neurekaInitCode = r"""
-neureka_siracusa_conf_t conf = {.max_stall = 8};
-neureka_nnx_init(neureka_siracusa_get_dev(), &conf);
+neureka_bsp_conf_t conf = {.max_stall = 8};
+neureka_nnx_init(neureka_bsp_get_dev(), &conf);
 """
 
 

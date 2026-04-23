@@ -340,9 +340,9 @@ neureka_task_t task = {
 
 NeurekaTaskExecutionTemplateStr = """
 // N-EUREKA Task Execution
-neureka_nnx_dispatch_wait(neureka_siracusa_get_dev());
-neureka_nnx_dispatch(neureka_siracusa_get_dev(), &task);
-neureka_nnx_resolve_wait(neureka_siracusa_get_dev(), &task);
+neureka_nnx_dispatch_wait(neureka_bsp_get_dev());
+neureka_nnx_dispatch(neureka_bsp_get_dev(), &task);
+neureka_nnx_resolve_wait(neureka_bsp_get_dev(), &task);
 """
 
 NeurekaRqntPWConv2D_Template = Neureka2DPWConvTemplate(NeurekaTaskInitTemplateStr + NeurekaTaskExecutionTemplateStr)
