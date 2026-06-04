@@ -777,6 +777,10 @@ class EluLayer(ONNXLayer):
         return self.mapper.parser.operatorRepresentation['size'] * 3
 
 
+class LeakyReluLayer(SingleOperationPerElementLayer):
+    pass
+
+
 class InstanceNormLayer(ONNXLayer):
 
     def computeOps(self):
