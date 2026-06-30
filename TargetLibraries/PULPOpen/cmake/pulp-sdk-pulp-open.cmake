@@ -46,7 +46,7 @@ set(PULP_SDK_INCLUDES ${PULP_OPEN_INCLUDES} ${PULP_SDK_BASE_INCLUDE})
 target_include_directories(pulp-sdk SYSTEM PUBLIC ${PULP_SDK_INCLUDES} ${PULP_OPEN_INCLUDES})
 target_compile_options(pulp-sdk PUBLIC ${PULP_SDK_COMPILE_FLAGS})
 target_compile_options(pulp-sdk PRIVATE
-  -O2
+  -O3
   -Wno-sign-conversion
   -Wno-unused-function
   -Wno-unused-parameter
