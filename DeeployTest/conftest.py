@@ -70,8 +70,13 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "gap9_tiled: mark test as a GAP9 platform test (tiled)")
     config.addinivalue_line("markers", "pulpopen: mark test as a PULPOpen platform test (untiled)")
     config.addinivalue_line("markers", "pulpopen_tiled: mark test as a PULPOpen platform test (tiled)")
-    config.addinivalue_line("markers", "pulpopen_idma: mark test as a PULPOpen_iDMA platform test (untiled)")
-    config.addinivalue_line("markers", "pulpopen_idma_tiled: mark test as a PULPOpen_iDMA platform test (tiled)")
+    config.addinivalue_line("markers", "pulpcluster_idma: mark test as a standalone PULP cluster (no FC) + iDMA test (untiled)")
+    config.addinivalue_line("markers", "pulpcluster_idma_tiled: mark test as a standalone PULP cluster (no FC) + iDMA test (tiled)")
+    # corev-gcc only: never select these alongside an RI5CY marker, see test_platforms.py
+    config.addinivalue_line(
+        "markers", "pulpcluster_idma_cv32e40p: mark test as a standalone PULP cluster + iDMA + CV32E40P test (untiled)")
+    config.addinivalue_line(
+        "markers", "pulpcluster_idma_cv32e40p_tiled: mark test as a standalone PULP cluster + iDMA + CV32E40P test (tiled)")
     config.addinivalue_line("markers", "kernels: mark test as a kernel test (individual operators)")
     config.addinivalue_line("markers", "models: mark test as a model test (full networks)")
     config.addinivalue_line("markers", "singlebuffer: mark test as single-buffer configuration")

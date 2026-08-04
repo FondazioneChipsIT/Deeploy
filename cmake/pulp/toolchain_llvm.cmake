@@ -2,6 +2,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+# try_compile() re-reads this file in a scope where -D cache vars are invisible.
+list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES platform)
+include(${CMAKE_CURRENT_LIST_DIR}/pulp_platforms.cmake)
+
 set(TOOLCHAIN_PREFIX ${TOOLCHAIN_INSTALL_DIR}/bin)
 
 set(CMAKE_SYSTEM_NAME Generic)
@@ -14,9 +18,17 @@ set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PREFIX}/clang)
 set(CMAKE_OBJCOPY ${TOOLCHAIN_PREFIX}/${LLVM_TAG}-objcopy)
 set(CMAKE_OBJDUMP ${TOOLCHAIN_PREFIX}/${LLVM_TAG}-objdump)
 
-set(ISA rv32imf_xpulpv2)
-set(PE 8)
-set(FC 1)
+if(PULP_HAS_FC)
+  set(ISA rv32imf_xpulpv2)
+  set(CLUSTER_LTO_FLAGS -flto)
+  set(PE 8)
+  set(FC 1)
+else()
+  set(ISA rv32imfc_xpulpv2)
+  set(CLUSTER_LTO_FLAGS -flto)
+  set(PE 8)
+endif()
+
 
 set(CMAKE_EXECUTABLE_SUFFIX ".elf")
 
@@ -28,6 +40,7 @@ add_compile_options(
   -fdata-sections
   -fomit-frame-pointer
   -mno-relax
+  ${CLUSTER_LTO_FLAGS}
   -O3
   -DNUM_CORES=${NUM_CORES}
   -MP
@@ -40,6 +53,7 @@ add_link_options(
   -target riscv32-unknown-elf
   -MP
   -nostartfiles
+  ${CLUSTER_LTO_FLAGS}
   -march=${ISA}
   -mabi=ilp32f
   -L${TOOLCHAIN_INSTALL_DIR}/picolibc/riscv/rv32imf/lib
