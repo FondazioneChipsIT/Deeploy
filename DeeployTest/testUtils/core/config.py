@@ -6,6 +6,17 @@ import os
 from dataclasses import dataclass
 from typing import List, Literal, Optional
 
+# Platforms whose build needs -DSDK_PLATFORM=<RTL|GVSOC|FPGA>. Single definition:
+# a mismatch between copies silently drops the flag and breaks the compile.
+PULP_SDK_PLATFORMS = (
+    "Siracusa",
+    "Siracusa_w_neureka",
+    "PULPOpen",
+    "PULPOpen_iDMA",
+    "PULPCluster_iDMA",
+    "PULPCluster_iDMA_CV32E40P",
+)
+
 
 @dataclass
 class DeeployTestConfig:

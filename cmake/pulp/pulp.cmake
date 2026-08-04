@@ -202,6 +202,66 @@ macro(add_pulp_open_vsim_simulation name)
 endmacro()
 
 
+# ---------------------------------------------------------------------------
+# Standalone cluster (pulp_cluster) RTL testbench.
+# ---------------------------------------------------------------------------
+
+set(PULP_CLUSTER_HOME $ENV{PULP_CLUSTER_HOME})
+
+# scripts/run_and_exit.tcl and scripts/start.tcl both hardcode ./build/test/test
+# and never read the APP variable they set, so link the ELF to that path and run
+# from the directory above it.
+function(_add_pulp_cluster_sim_target target elf script use_qone batch)
+  if(NOT PULP_CLUSTER_HOME)
+    message(FATAL_ERROR
+      "PULP_CLUSTER_HOME is not set. ${platform} simulates on the pulp_cluster "
+      "testbench;")
+  endif()
+
+  set(_link_dir ${CMAKE_BINARY_DIR}/build/test)
+  set(_env)
+  if(use_qone)
+    set(_env USE_QONE=1)
+  endif()
+  set(_batch_flag)
+  if(batch)
+    set(_batch_flag -c)
+  endif()
+
+  add_custom_target(${target}
+    DEPENDS ${elf}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${_link_dir}
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+      ${CMAKE_BINARY_DIR}/bin/${elf} ${_link_dir}/test
+
+    # VSIM_PATH must be a Tcl variable, not an environment one: the scripts
+    # error out if it is missing, and use it as -lib $VSIM_PATH/work.
+    COMMAND ${CMAKE_COMMAND} -E env ${_env}
+      ${QUESTA} -64 ${_batch_flag}
+        -do "set VSIM_PATH ${PULP_CLUSTER_HOME}; source ${PULP_CLUSTER_HOME}/scripts/${script}"
+
+    COMMENT "Simulating ${elf} on the pulp_cluster testbench"
+    USES_TERMINAL
+    VERBATIM
+  )
+endfunction()
+
+# run_and_exit.tcl ends with `quit -code [examine sim:/pulp_cluster_tb/ret_val]`,
+# so these targets propagate the test's exit status. The cluster Makefile's own
+# `run` target pipes through tee and therefore always reports success.
+macro(add_pulp_cluster_vsim_simulation name)
+  _add_pulp_cluster_sim_target(vsim_${name}     ${name} run_and_exit.tcl OFF ON)
+  _add_pulp_cluster_sim_target(vsim.gui_${name} ${name} start.tcl        OFF OFF)
+endmacro()
+
+macro(add_pulp_cluster_qsim_simulation name)
+  _add_pulp_cluster_sim_target(qsim_${name}     ${name} run_and_exit.tcl ON ON)
+  _add_pulp_cluster_sim_target(qsim.gui_${name} ${name} start.tcl        ON OFF)
+endmacro()
+
+
 add_compile_options(
   -ffast-math
 )

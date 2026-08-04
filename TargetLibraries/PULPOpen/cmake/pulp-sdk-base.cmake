@@ -59,8 +59,27 @@ set(PULP_SDK_BASE_INCLUDE
   ${PULP_SDK_HOME}/rtos/pmsis/pmsis_bsp/include
 )
 
+# The SDK's own core switch, mirroring the USE_CV32E40P arm of pulp.mk. __riscv__
+# means "RI5CY/xpulpv2", and gates code calling __builtin_pulp_* directly.
+if(PULP_CORE STREQUAL cv32e40p)
+  set(PULP_SDK_CORE_FLAGS -U__riscv__ -D__cv32e40p__)
+else()
+  set(PULP_SDK_CORE_FLAGS -D__riscv__)
+endif()
+
+# The SDK's CONFIG_NO_FC, i.e. cluster core 0 emulates the FC. Chip-derived, not a
+# knob. Only chips/pulp/properties.h honours it -- chips/siracusa/properties.h
+# defines the FC macros unconditionally, so setting it there is incoherent, not
+# merely different.
+if(PULP_HAS_FC)
+  set(PULP_SDK_FC_FLAGS)
+else()
+  set(PULP_SDK_FC_FLAGS -DARCHI_NO_FC=1)
+endif()
+
 set(PULP_SDK_BASE_COMPILE_FLAGS
-  -D__riscv__
+  ${PULP_SDK_CORE_FLAGS}
+  ${PULP_SDK_FC_FLAGS}
   -D__CONFIG_UDMA__
   -D__PULPOS2__
   -DARCHI_CLUSTER_NB_PE=8
@@ -71,4 +90,12 @@ set(PULP_SDK_BASE_COMPILE_FLAGS
 )
 
 set_source_files_properties(${PULP_SDK_BASE_ASM_SOURCE} PROPERTIES COMPILE_FLAGS -DLANGUAGE_ASSEMBLY)
+
+# pos_init_do_ctors() reads off the end of a 1-element array and relies on linker
+# placement -- UB that LTO is entitled to fold away. Cold init code, nothing to gain.
+set_source_files_properties(
+  ${PULP_SDK_HOME}/rtos/pulpos/common/kernel/init.c
+  PROPERTIES COMPILE_OPTIONS -fno-lto
+)
+
 add_library(pulp-sdk-base OBJECT ${PULP_SDK_BASE_C_SOURCE} ${PULP_SDK_BASE_ASM_SOURCE})
