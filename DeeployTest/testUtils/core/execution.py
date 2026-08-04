@@ -10,7 +10,7 @@ from pathlib import Path
 
 from Deeploy.Logging import DEFAULT_LOGGER as log
 
-from .config import DeeployTestConfig
+from .config import PULP_SDK_PLATFORMS, DeeployTestConfig
 from .output_parser import TestResult, parse_test_output
 
 
@@ -102,7 +102,7 @@ def configure_cmake(config: DeeployTestConfig) -> None:
     else:
         cmd.append("-Dgvsoc_simulation=OFF")
 
-    if config.platform in ('Siracusa', 'Siracusa_w_neureka', 'PULPOpen', 'PULPOpen_iDMA'):
+    if config.platform in PULP_SDK_PLATFORMS:
         if config.simulator in ('vsim', 'vsim.gui', 'qsim', 'qsim.gui'):
             cmd.append("-DSDK_PLATFORM=RTL")
         elif config.simulator == 'gvsoc':

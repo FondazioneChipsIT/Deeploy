@@ -16,6 +16,7 @@ from Deeploy.Logging import DEFAULT_LOGGER as log
 from Deeploy.Logging import DETAILED_FILE_LOG_FORMAT
 
 from .core import DeeployTestConfig, run_complete_test
+from .core.config import PULP_SDK_PLATFORMS
 from .core.paths import get_test_paths
 
 
@@ -360,6 +361,8 @@ def main(default_platform: Optional[str] = None,
         "softhier": "SoftHier",
         "pulpopen": "PULPOpen",
         "pulpopen_idma": "PULPOpen_iDMA",
+        "pulpcluster_idma": "PULPCluster_iDMA",
+        "pulpcluster_idma_cv32e40p": "PULPCluster_iDMA_CV32E40P",
     }
 
     if args.platform:
@@ -402,6 +405,8 @@ def main(default_platform: Optional[str] = None,
             "SoftHier": "gvsoc",
             "PULPOpen": "gvsoc",
             "PULPOpen_iDMA": "qsim",
+            "PULPCluster_iDMA": "qsim",
+            "PULPCluster_iDMA_CV32E40P": "qsim",
         }
         simulator = simulator_map.get(platform, "host")
         log.info(f"No simulator specified, using default for {platform}: {simulator}")
@@ -410,7 +415,7 @@ def main(default_platform: Optional[str] = None,
     if platform_specific_cmake_args is None:
         platform_specific_cmake_args = []
 
-    if platform in ('Siracusa', 'Siracusa_w_neureka', 'PULPOpen', 'PULPOpen_iDMA'):
+    if platform in PULP_SDK_PLATFORMS:
         if simulator in ('vsim', 'vsim.gui', 'qsim', 'qsim.gui'):
             platform_specific_cmake_args.append(f"-DSDK_PLATFORM=RTL")
         elif simulator == 'gvsoc':

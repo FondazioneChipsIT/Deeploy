@@ -20,21 +20,28 @@ if(TOOLCHAIN STREQUAL GCC)
   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
-set(platform MemPool CACHE STRING "Platform (MemPool, SoftHier, QEMU, Siracusa, Siracusa_w_neureka, PULP-Open, GAP9, Generic, Snitch)")
-set_property(CACHE platform PROPERTY STRINGS MemPool SoftHier QEMU Siracusa Siracusa_w_neureka PULP-Open GAP9 Generic Snitch)
+set(PLATFORMS
+  MemPool SoftHier QEMU-ARM Generic Snitch Chimera GAP9
+  Siracusa Siracusa_w_neureka
+  PULPOpen PULPOpen_iDMA PULPCluster_iDMA PULPCluster_iDMA_CV32E40P
+)
+set(platform MemPool CACHE STRING "Platform (${PLATFORMS})")
+set_property(CACHE platform PROPERTY STRINGS ${PLATFORMS})
+
+# PULP_CHIP / PULP_HAS_FC / PULP_CORE / PULP_HARNESS_DIR
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/pulp/pulp_platforms.cmake)
 
 if(platform STREQUAL MemPool)
   message(STATUS "Building for platform 'MemPool'")
 elseif(platform STREQUAL QEMU-ARM)
   message(STATUS "Building for platform 'QEMU-ARM'")
-elseif(platform STREQUAL Siracusa)
-  message(STATUS "Building for platform 'Siracusa'")
-elseif(platform STREQUAL Siracusa_w_neureka)
-  message(STATUS "Building for platform 'Siracusa_w_neureka'")
-elseif(platform STREQUAL PULPOpen_iDMA)
-  message(STATUS "Building for platform 'PULP-Open' with iDMA")
-elseif(platform STREQUAL PULPOpen)
-  message(STATUS "Building for platform 'PULP-Open'")
+elseif(PULP_IS_PULP_PLATFORM)
+  if(PULP_HAS_FC)
+    set(_fc "FC")
+  else()
+    set(_fc "no FC (standalone cluster, needs a CONFIG_NO_FC-capable PULP_SDK_HOME)")
+  endif()
+  message(STATUS "Building for platform '${platform}': chip ${PULP_CHIP}, ${_fc}, core ${PULP_CORE}")
 elseif(platform STREQUAL GAP9)
   message(STATUS "Building for platform 'GAP9'")
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -200,9 +207,15 @@ if(platform STREQUAL QEMU-ARM)
 
 endif()
 
-if(platform STREQUAL Siracusa OR platform STREQUAL Siracusa_w_neureka OR platform STREQUAL PULPOpen_iDMA OR platform STREQUAL PULPOpen)
+if(PULP_IS_PULP_PLATFORM)
 
-  if(TOOLCHAIN STREQUAL LLVM)
+  if(PULP_CORE STREQUAL cv32e40p)
+    # corev-gcc only: cv.* mnemonics and __builtin_riscv_cv_* intrinsics.
+    if(TOOLCHAIN STREQUAL LLVM)
+      message(FATAL_ERROR "platform=${platform} requires -DTOOLCHAIN=GCC with a corev-gcc install")
+    endif()
+    set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_LIST_DIR}/cmake/pulp/toolchain_gcc_cv32e40p.cmake)
+  elseif(TOOLCHAIN STREQUAL LLVM)
     set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_LIST_DIR}/cmake/pulp/toolchain_llvm.cmake)
   else()
     set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_LIST_DIR}/cmake/pulp/toolchain_gcc.cmake)
@@ -210,9 +223,11 @@ if(platform STREQUAL Siracusa OR platform STREQUAL Siracusa_w_neureka OR platfor
 
   include(${CMAKE_CURRENT_LIST_DIR}/cmake/pulp/pulp.cmake)
 
-  if(platform STREQUAL Siracusa OR platform STREQUAL Siracusa_w_neureka)
+  # XPULPV2/32bit is correct for CV32E40P too: the SDK's builtins_pulp_compat.h
+  # retargets the XpulpV2 __builtin_pulp_* calls onto the CoreV intrinsics.
+  if(PULP_CHIP STREQUAL siracusa)
     include(${CMAKE_CURRENT_LIST_DIR}/cmake/pulp/siracusa/siracusa.cmake)
-  elseif(platform STREQUAL PULPOpen_iDMA OR platform STREQUAL PULPOpen)
+  else()
     include(${CMAKE_CURRENT_LIST_DIR}/cmake/pulp/pulp-open/pulp-open.cmake)
   endif()
 
@@ -221,7 +236,7 @@ if(platform STREQUAL Siracusa OR platform STREQUAL Siracusa_w_neureka OR platfor
   message(STATUS "============================= ${platform} Configuration ============================")
   message(STATUS "[cMake  ]   ISA                    = " ${ISA})
   message(STATUS "[cMake  ]   Cluster Cores          = " ${PE})
-  message(STATUS "[cMake  ]   Fabric Controller      = " ${FC})
+  message(STATUS "[cMake  ]   Fabric Controller      = " ${PULP_HAS_FC})
   message(STATUS "[cMake  ]   Number of used cores   = " ${NUM_CORES})
   message(STATUS "================================================================================")
   message(STATUS "")
