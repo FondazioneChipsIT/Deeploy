@@ -30,6 +30,10 @@ def dictOfArrays(arrayOfDicts: Sequence[Mapping[KT, VT]]) -> Mapping[KT, List[VT
 
 class TilingHoistingMixIn:
 
+    # JUNGVI: This attributes is here to override manually where the tiling informations are stored.
+    # It is useful for debugging purposes but too nice to expose to the CLI.
+    tileControlTableMemoryLevel: Optional[str] = None
+
     _DEFAULT_HOIST_PREFIX = "TILING_CODEGEN_"
 
     def __init__(self, memory: str) -> None:
@@ -60,7 +64,7 @@ class TilingHoistingMixIn:
         else:
             cb._type = PointerClass(BasicDataTypes.minimalIntegerType(values))
         cb._instance = cb._type(cb.name, ctxt)
-        cb._memoryLevel = self.memory
+        cb._memoryLevel = self.tileControlTableMemoryLevel or self.memory
         return cb
 
     def _hoistReference(self,
