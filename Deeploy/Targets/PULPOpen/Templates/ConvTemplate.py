@@ -26,9 +26,8 @@ class PULP2DConvTemplate(NodeTemplate):
 
         return ctxt, operatorRepresentation, []
 
-    @staticmethod
     def computeTransientBuffersSize(
-            ctxt: NetworkContext,
+            self, ctxt: NetworkContext,
             operatorRepresentation: OperatorRepresentation) -> List[Tuple[str, Union[int, IntVar]]]:
         im2col_dim = 2 * 8 * (operatorRepresentation['ch_im_in'] * operatorRepresentation['dim_kernel_x'] *
                               operatorRepresentation['dim_kernel_y'])
@@ -37,7 +36,7 @@ class PULP2DConvTemplate(NodeTemplate):
 
     def hoistTransientBuffers(self, ctxt: NetworkContext,
                               operatorRepresentation: OperatorRepresentation) -> Tuple[NetworkContext, Dict, List[str]]:
-        im2col_name, im2col_dim = PULP2DConvTemplate.computeTransientBuffersSize(ctxt, operatorRepresentation)[0]
+        im2col_name, im2col_dim = self.computeTransientBuffersSize(ctxt, operatorRepresentation)[0]
         ctxt.hoistTransientBuffer(im2col_name, im2col_dim)
 
         operatorRepresentation['ctxtBuffer'] = im2col_name
@@ -62,6 +61,21 @@ class PULP2DDWConvTemplate(PULP2DConvTemplate):
 
         return ctxt, operatorRepresentation, []
 
+    def computeTransientBuffersSize(
+            self, ctxt: NetworkContext,
+            operatorRepresentation: OperatorRepresentation) -> List[Tuple[str, Union[int, IntVar]]]:
+        # One column-shaped im2col scratch per core, sized with the kernel's parameters. The call
+        # below passes the spatial axes transposed, so dim_in_y is dim_im_in_x and dim_kernel_x is
+        # dim_kernel_y.
+        pad_top = operatorRepresentation['padding_y_top']
+        pad_bot = operatorRepresentation['padding_y_bottom']
+        per_core = (operatorRepresentation['dim_kernel_y'] *
+                    (operatorRepresentation['dim_im_in_x'] + pad_top + pad_bot) +
+                    operatorRepresentation['dim_kernel_y'])
+        im2col_dim = 8 * per_core
+        im2col_name = operatorRepresentation['nodeName'] + "_buffer"
+        return [(im2col_name, im2col_dim)]
+
 
 class PULP1DConvTemplate(NodeTemplate):
 
@@ -84,9 +98,8 @@ class PULP1DConvTemplate(NodeTemplate):
 
         return ctxt, operatorRepresentation, []
 
-    @staticmethod
     def computeTransientBuffersSize(
-            ctxt: NetworkContext,
+            self, ctxt: NetworkContext,
             operatorRepresentation: OperatorRepresentation) -> List[Tuple[str, Union[int, IntVar]]]:
         im2col_dim = 8 * 2 * operatorRepresentation['ch_im_in'] * operatorRepresentation['dim_kernel_y']
         im2col_name = operatorRepresentation['nodeName'] + "_buffer"
@@ -94,7 +107,7 @@ class PULP1DConvTemplate(NodeTemplate):
 
     def hoistTransientBuffers(self, ctxt: NetworkContext,
                               operatorRepresentation: OperatorRepresentation) -> Tuple[NetworkContext, Dict, List[str]]:
-        im2col_name, im2col_dim = PULP1DConvTemplate.computeTransientBuffersSize(ctxt, operatorRepresentation)[0]
+        im2col_name, im2col_dim = self.computeTransientBuffersSize(ctxt, operatorRepresentation)[0]
         ctxt.hoistTransientBuffer(im2col_name, im2col_dim)
         operatorRepresentation['ctxtBuffer'] = im2col_name
         operatorRepresentation['ctxtBufferSize'] = im2col_dim
@@ -105,6 +118,20 @@ class PULP1DDWConvTemplate(PULP1DConvTemplate):
 
     def __init__(self, templateStr):
         super().__init__(templateStr)
+
+    def computeTransientBuffersSize(
+            self, ctxt: NetworkContext,
+            operatorRepresentation: OperatorRepresentation) -> List[Tuple[str, Union[int, IntVar]]]:
+        # The depthwise pulp-nn kernel reuses one column-shaped im2col scratch
+        # per core. Per core it needs `dim_kernel_y * (dim_in_y + pad_top + pad_bot) + dim_kernel_y` bytes (the trailing `+ dim_kernel_y` is the safety zone for the last v4u write).
+        pad_top = operatorRepresentation['padding_y_top']
+        pad_bot = operatorRepresentation['padding_y_bottom']
+        per_core = (operatorRepresentation['dim_kernel_y'] *
+                    (operatorRepresentation['dim_im_in_y'] + pad_top + pad_bot) +
+                    operatorRepresentation['dim_kernel_y'])
+        im2col_dim = 8 * per_core
+        im2col_name = operatorRepresentation['nodeName'] + "_buffer"
+        return [(im2col_name, im2col_dim)]
 
 
 PULPConv2D_8_Template = PULP2DConvTemplate("""
