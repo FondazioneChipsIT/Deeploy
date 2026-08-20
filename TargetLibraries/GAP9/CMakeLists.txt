@@ -40,6 +40,9 @@ set(_KERNEL_O3_FILES
   ${CMAKE_CURRENT_LIST_DIR}/../PULPOpen/src/Convolution_fp32.c
   ${CMAKE_CURRENT_LIST_DIR}/../PULPOpen/src/DWConvolution_fp32.c
   ${CMAKE_CURRENT_LIST_DIR}/../PULPOpen/src/Gemm.c
+  ${CMAKE_CURRENT_LIST_DIR}/../PULPOpen/src/PULPDWConv3x3.c
+  ${CMAKE_CURRENT_LIST_DIR}/../PULPOpen/src/PULPPWConv1x1.c
+  ${CMAKE_CURRENT_LIST_DIR}/../PULPOpen/src/PULPStemConv3x3.c
 )
 set_source_files_properties(${_KERNEL_O3_FILES} PROPERTIES COMPILE_OPTIONS "-O3")
 
