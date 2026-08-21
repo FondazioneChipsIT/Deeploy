@@ -1110,10 +1110,6 @@ class NodeParser():
         for inputNode in node.inputs:
             data_in = inputNode.name
 
-            # Skip absent optional inputs (ONNX represents them as empty-name Variables)
-            if not data_in:
-                continue
-
             # Hoist constant inputs
             if type(inputNode) == gs.ir.tensor.Constant and not ctxt.is_global(data_in):
                 ctxt.hoistConstant(inputNode)
@@ -1281,7 +1277,7 @@ class NodeTypeChecker():
         """
         newCtxt = ctxt.copy()
 
-        inputs = [ctxt.lookup(inputNode.name) for inputNode in node.inputs if inputNode.name]
+        inputs = [ctxt.lookup(inputNode.name) for inputNode in node.inputs]
         outputNames = [node.name for node in node.outputs]
 
         outputTypes = self.output_types
@@ -1310,13 +1306,14 @@ class NodeTypeChecker():
         retCheck = True
 
         for inputNode, _type in zip(node.inputs, self.input_types):
-            if not inputNode.name:
-                continue
-
             reference = ctxt.lookup(inputNode.name)
 
             if not isinstance(reference, VariableBuffer):
                 return False
+
+            # Absent optional input: zero-sized placeholder, nothing to type check
+            if hasattr(reference, "values") and reference.values.size == 0:
+                continue
 
             if hasattr(reference, "values"):
                 retCheck &= _type.referencedType.checkPromotion(reference.values)
@@ -1333,11 +1330,13 @@ class NodeTypeChecker():
 
     def typeInferGlobalCtxt(self, ctxt: NetworkContext, node: gs.Node) -> NetworkContext:
         for inputNode, _type in zip(node.inputs, self.input_types):
-            if not inputNode.name:
-                continue
-
             if isinstance(ctxt.lookup(inputNode.name), ConstantBuffer):
                 reference = ctxt.lookup(inputNode.name)
+
+                # Absent optional input: zero-sized placeholder, nothing to infer
+                if reference.values.size == 0:
+                    continue
+
                 if not _type.referencedType.checkPromotion(reference.values):
                     raise Exception(f"Can't cast {reference} to {_type}!")
 
@@ -1358,7 +1357,7 @@ class NodeTypeChecker():
             The NodeParser's operatorRepresentation
 
         """
-        env = [node.name for node in node.inputs + node.outputs if node.name]
+        env = [node.name for node in node.inputs + node.outputs]
         for key, value in operatorRepresentation.items():
             # check if the referenced buffer is in the environment
             if isinstance(value, str) and value in env:
@@ -1913,9 +1912,7 @@ class ONNXLayer():
             broadcast to the target shape
 
         """
-        # Absent optional inputs are represented in ONNX as empty-name Variables; skip them.
-        validInputNodes = [node for node in self.node.inputs if node.name]
-        inputShapes = [ctxt.lookup(node.name).shape for node in validInputNodes]
+        inputShapes = [ctxt.lookup(node.name).shape for node in self.node.inputs]
         outputShapes = [ctxt.lookup(node.name).shape for node in self.node.outputs]
 
         if not "channels_first" in self.mapper.parser.operatorRepresentation:
@@ -1926,7 +1923,8 @@ class ONNXLayer():
         newInputShapes, newOutputShapes = self.computeShapes(inputShapes, outputShapes,
                                                              self.mapper.parser.operatorRepresentation, channels_first)
 
-        for node, newShape in zip(validInputNodes + self.node.outputs, newInputShapes + newOutputShapes, strict = True):
+        for node, newShape in zip(self.node.inputs + self.node.outputs, newInputShapes + newOutputShapes,
+                                  strict = True):
             if ctxt.is_local(node.name):
                 ctxt.localObjects[node.name].shape = newShape
                 # Update shape of tensors in onnx graph
@@ -3412,6 +3410,29 @@ class NetworkDeployer(NetworkContainer):
             # else: unique name, leave it unchanged
 
     # Don't override this
+    def _nameEmptyTensors(self):
+        """Assign a name to every unnamed tensor in the graph
+
+        Deeploy keys every tensor by its name, so this pass replaces each
+        unnamed input with a uniquely named, zero-sized Constant.
+        """
+        takenNames = set(self.graph.tensors().keys())
+
+        for node in self.graph.nodes:
+            for idx, tensor in enumerate(node.inputs):
+                if not tensor.is_empty():
+                    continue
+
+                baseName = f"{node.name or node.op}_empty_input_{idx}"
+                name, counter = baseName, 0
+                while name in takenNames:
+                    counter += 1
+                    name = f"{baseName}_{counter}"
+                takenNames.add(name)
+
+                node.inputs[idx] = gs.Constant(name, np.zeros(0, dtype = np.float32))
+
+    # Don't override this
     def _removeIdentityNodes(self):
         for node in filter(lambda x: x.op == "Identity", self.graph.nodes):
             self.graph.deleteNode(node)
@@ -3434,6 +3455,9 @@ class NetworkDeployer(NetworkContainer):
 
         log.debug(" - Remove Identity Nodes")
         self._removeIdentityNodes()
+
+        log.debug(" - Name Empty Tensors")
+        self._nameEmptyTensors()
 
         log.debug(" - Mangle Tensor Names")
         self._mangleTensorNames()

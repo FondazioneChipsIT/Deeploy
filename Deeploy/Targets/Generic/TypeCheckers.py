@@ -6,7 +6,7 @@ from typing import List, Optional
 
 import numpy as np
 
-from Deeploy.AbstractDataTypes import FloatImmediate, Pointer
+from Deeploy.AbstractDataTypes import FloatImmediate
 from Deeploy.CommonExtensions.TypeCheckers.SignPropTypeChecker import SignPropTypeChecker
 from Deeploy.DeeployTypes import ConstantBuffer, OperatorRepresentation, VariableBuffer
 
