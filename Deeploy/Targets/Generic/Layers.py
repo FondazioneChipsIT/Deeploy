@@ -22,6 +22,10 @@ class ConcatLayer(ONNXLayer):
         super().__init__(maps)
 
 
+class SplitLayer(ONNXLayer):
+    pass
+
+
 class iRMSNormLayer(ONNXLayer):
 
     def __init__(self, maps: List[NodeMapper]):

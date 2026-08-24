@@ -23,12 +23,13 @@ from Deeploy.Targets.Generic.Templates import AddTemplate, BatchNormalizationTem
     GemmTemplate, IntegerDivTemplate, ITAMaxTemplate, ITAPartialMaxTemplate, MatMulTemplate, MaxPoolTemplate, \
     MulTemplate, PadTemplate, QuantTemplate, ReduceMeanTemplate, ReduceSumTemplate, RequantShiftTemplate, \
     ReshapeTemplate, ResizeTemplate, RQIntegerDivTemplate, RQSiGELUTemplate, ScatterTemplate, SliceTemplate, \
-    SubTemplate, TransposeTemplate, iGELUTemplate, iLayernormTemplate, iRMSNormTemplate, iSoftmaxTemplate
+    SplitTemplate, SubTemplate, TransposeTemplate, iGELUTemplate, iLayernormTemplate, iRMSNormTemplate, \
+    iSoftmaxTemplate
 from Deeploy.Targets.Generic.TypeCheckers import AddChecker, BatchNormChecker, ConcatChecker, ConvChecker, \
     DebugPrintChecker, DequantChecker, DivChecker, DummyChecker, GatherChecker, GELUChecker, GEMMChecker, \
     LayerNormChecker, MatMulChecker, MaxPoolChecker, MulChecker, PadChecker, PassThroughTypeChecker, QuantChecker, \
     ReduceMeanChecker, ReduceSumChecker, ReluChecker, RequantShiftChecker, ReshapeChecker, RQIntegerDivChecker, \
-    SliceChecker, SoftmaxChecker, TransposeChecker
+    SigmoidChecker, SliceChecker, SoftmaxChecker, SplitChecker, TransposeChecker
 
 BasicTransformer = CodeTransformation([ArgumentStructGeneration(), MemoryManagementGeneration(), FutureGeneration()])
 
@@ -306,6 +307,11 @@ BasicConcatBindings = [
                 ConcatTemplate.referenceTemplate, BasicTransformer)
 ]
 
+BasicSplitBindings = [
+    NodeBinding(SplitChecker([PointerClass(type), PointerClass(int32_t)], [PointerClass(type)]),
+                SplitTemplate.referenceTemplate, BasicTransformer) for type in IntegerDataTypes + FloatDataTypes
+]
+
 BasicQuantBindings = [
     NodeBinding(QuantChecker([PointerClass(float32_t)], [PointerClass(int8_t)]), QuantTemplate.referenceTemplate,
                 BasicTransformer),
@@ -391,7 +397,7 @@ BasicTanhBindings = [
 ]
 
 BasicSigmoidBindings = [
-    NodeBinding(DummyChecker([PointerClass(float32_t)], [PointerClass(float32_t)]),
+    NodeBinding(SigmoidChecker([PointerClass(float32_t)], [PointerClass(float32_t)]),
                 FloatSigmoidTemplate.referenceTemplate, BasicTransformer),
 ]
 

@@ -58,6 +58,77 @@ class ConcatParser(NodeParser):
         return ctxt, True
 
 
+class SplitParser(NodeParser):
+
+    def parseNode(self, node: gs.Node) -> bool:
+
+        if not all([len(node.inputs) in [1, 2], len(node.outputs) >= 1]):
+            return False
+
+        if len(node.inputs) == 2 and not isinstance(node.inputs[1], gs.Constant):
+            return False
+
+        if 'num_outputs' in node.attrs:  # opset 18 only
+            if len(node.outputs) != node.attrs['num_outputs']:
+                return False
+
+        self.operatorRepresentation['axis'] = int(node.attrs.get('axis', 0))
+        self.operatorRepresentation['num_outputs'] = len(node.outputs)
+
+        return True
+
+    def parseNodeCtxt(self,
+                      ctxt: NetworkContext,
+                      node: gs.Node,
+                      channels_first: bool = True) -> Tuple[NetworkContext, bool]:
+
+        data_in = ctxt.lookup(node.inputs[0].name)
+        self.operatorRepresentation['data_in'] = data_in.name
+
+        if len(node.inputs) == 2:
+            self.operatorRepresentation['split'] = ctxt.lookup(node.inputs[1].name).name
+
+        for idx, outputNode in enumerate(node.outputs):
+            self.operatorRepresentation[f'data_out_{idx}'] = ctxt.lookup(outputNode.name).name
+
+        input_shape: tuple[int, ...] = tuple(data_in.shape)
+        axis: int = self.operatorRepresentation['axis']
+        if axis < 0:
+            axis += len(input_shape)
+        if not 0 <= axis < len(input_shape):
+            return ctxt, False
+        self.operatorRepresentation['axis'] = axis
+
+        ### check output shapes
+        # for every output:
+        # 1. number of dimensions matches input's
+        # 2. every dimension matches the input except along the split axis
+        # 3. chunks have to cover that axis exactly.
+
+        # extract output shape
+        output_shapes = [
+            ctxt.lookup(self.operatorRepresentation[f'data_out_{idx}']).shape
+            for idx in range(self.operatorRepresentation['num_outputs'])
+        ]
+
+        for output_shape in output_shapes:
+            # 1. every output matches the number of dimensions
+            if len(output_shape) != len(input_shape):
+                return ctxt, False
+
+            # 2. every output matches the input except along the split axis
+            for i, (out_dim, in_dim) in enumerate(zip(output_shape, input_shape)):
+                if i != axis and out_dim != in_dim:
+                    return ctxt, False
+
+        # 3. chunks have to cover that axis exactly.
+        chunks_length = sum(output_shape[axis] for output_shape in output_shapes)
+        if chunks_length != input_shape[axis]:
+            return ctxt, False
+
+        return ctxt, True
+
+
 class iRMSNormParser(NodeParser):
 
     def __init__(self):

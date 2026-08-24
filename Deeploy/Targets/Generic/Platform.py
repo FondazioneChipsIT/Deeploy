@@ -17,15 +17,15 @@ from Deeploy.Targets.Generic.Bindings import BasicAddBindings, BasicAveragePool1
     BasicMaxPool2DBindings, BasicMulBindings, BasicPad1DBindings, BasicPad2DBindings, BasicPowBindings, \
     BasicQuantBindings, BasicReduceMeanBindings, BasicReduceSumBindings, BasicReluBinding, BasicReshapeBindings, \
     BasicResizeBindings, BasicRQIntegerDivBinding, BasicRQSBindings, BasicRQSGELUBinding, BasicScatterBindings, \
-    BasicSeluBindings, BasicSigmoidBindings, BasicSliceBindings, BasicSoftmaxBindings, BasicSqrtBindings, \
-    BasicSubBindings, BasicSwishBindings, BasicTanhBindings, BasicTransposeBindings, DummyBinding
+    BasicSeluBindings, BasicSigmoidBindings, BasicSliceBindings, BasicSoftmaxBindings, BasicSplitBindings, \
+    BasicSqrtBindings, BasicSubBindings, BasicSwishBindings, BasicTanhBindings, BasicTransposeBindings, DummyBinding
 from Deeploy.Targets.Generic.Layers import AddLayer, AveragePoolLayer, BatchNormalizationLayer, CeilLayer, ClipLayer, \
     Col2ImLayer, ConcatLayer, ConvLayer, ConvTransposeLayer, DebugPrintLayer, DequantLayer, DivLayer, EluLayer, \
     ExpLayer, FloorLayer, GatherLayer, GELULayer, GEMMLayer, GlobalAveragePoolLayer, GlobalMaxPoolLayer, \
     GroupNormLayer, InstanceNormLayer, ITAMaxLayer, LayerNormLayer, LeakyReluLayer, MatMulLayer, MaxPoolLayer, \
     MulLayer, PadLayer, PowLayer, QuantLayer, ReduceMeanLayer, ReduceSumLayer, ReluLayer, RequantShiftLayer, \
     ReshapeLayer, ResizeLayer, RQIntegerDivLayer, RQSiGELULayer, ScatterLayer, SeluLayer, SigmoidLayer, SliceLayer, \
-    SoftmaxLayer, SqrtLayer, SubLayer, SwishLayer, TanhLayer, TransposeLayer
+    SoftmaxLayer, SplitLayer, SqrtLayer, SubLayer, SwishLayer, TanhLayer, TransposeLayer
 from Deeploy.Targets.Generic.Parsers import AddParser, AveragePool1DParser, AveragePool2DParser, BatchNormParser, \
     CeilParser, ClipParser, Col2ImParser, ConcatParser, ConvTranspose1DParser, ConvTranspose2DParser, DebugParser, \
     DequantParser, DivParser, DummyParser, EluParser, ExpParser, FlattenParser, FloorParser, GatherParser, GELUParser, \
@@ -35,7 +35,7 @@ from Deeploy.Targets.Generic.Parsers import AddParser, AveragePool1DParser, Aver
     LeakyReluParser, MatMulParser, MaxPool1DParser, MulParser, Pad1DParser, Pad2DParser, PowParser, QuantParser, \
     ReduceMeanParser, ReduceSumParser, ReluParser, RequantShiftParser, ReshapeParser, ResizeParser, \
     RQIntegerDivParser, RQSiGELUParser, ScatterParser, SeluParser, SigmoidParser, SliceParser, SoftmaxParser, \
-    SqrtParser, SubParser, SwishParser, TanhParser, TransposeParser, UnsqueezeParser, iLayerNormParser, \
+    SplitParser, SqrtParser, SubParser, SwishParser, TanhParser, TransposeParser, UnsqueezeParser, iLayerNormParser, \
     iSoftmaxParser
 from Deeploy.Targets.Generic.Templates import AllocateTemplate, FreeTemplate
 from Deeploy.Targets.Generic.TopologyOptimizationPasses.Passes import DequantPatternPass, ExtractPaddingFromConvPass, \
@@ -47,6 +47,7 @@ SubMapper = NodeMapper(SubParser(), BasicSubBindings)
 Conv1DMapper = NodeMapper(GenericConv1DParser(), BasicConv1DBindings)
 Conv2DMapper = NodeMapper(GenericConv2DParser(), BasicConv2DBindings)
 ConcatMapper = NodeMapper(ConcatParser(), BasicConcatBindings)
+SplitMapper = NodeMapper(SplitParser(), BasicSplitBindings)
 DebugMapper = NodeMapper(DebugParser(), BasicDebugPrintBindings)
 DWConv1DMapper = NodeMapper(GenericDWConv1DParser(), [BasicDWConv1DBinding])
 DWConv2DMapper = NodeMapper(GenericDWConv2DParser(), BasicDWConv2DBindings)
@@ -151,6 +152,7 @@ GenericMapping = {
     'Transpose': TransposeLayer([TransposeMapper]),
     'Unsqueeze': ReshapeLayer([UnsqueezeMapper]),
     'Slice': SliceLayer([SliceMapper]),
+    'Split': SplitLayer([SplitMapper]),
     'Quant': QuantLayer([QuantMapper]),
     'Dequant': DequantLayer([DequantMapper]),
     'BatchNormalization': BatchNormalizationLayer([BatchNormalizationMapper]),

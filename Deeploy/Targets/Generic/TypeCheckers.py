@@ -5,10 +5,11 @@
 from typing import List, Optional
 
 import numpy as np
+import onnx_graphsurgeon as gs
 
 from Deeploy.AbstractDataTypes import FloatImmediate
 from Deeploy.CommonExtensions.TypeCheckers.SignPropTypeChecker import SignPropTypeChecker
-from Deeploy.DeeployTypes import ConstantBuffer, OperatorRepresentation, VariableBuffer
+from Deeploy.DeeployTypes import ConstantBuffer, NetworkContext, OperatorRepresentation, VariableBuffer
 
 
 class DummyChecker(SignPropTypeChecker):
@@ -412,3 +413,35 @@ class RMSNormChecker(SignPropTypeChecker):
             return [True]
         else:
             return [False]
+
+
+class SigmoidChecker(DummyChecker):
+
+    def _inferSignedness(self, inputs: List[VariableBuffer],
+                         operatorRepresentation: OperatorRepresentation) -> List[bool]:
+        return [bool(inputs[0]._signed)]
+
+
+class SplitChecker(SignPropTypeChecker):
+    """Type checker for operators with a variadic number of outputs which all
+    share the type of the first input, e.g. Split.
+    """
+
+    def typeInferOutput(self, ctxt: NetworkContext, node: gs.Node,
+                        operatorRepresentation: OperatorRepresentation) -> NetworkContext:
+        # declares a single output type and broadcasts it over all outputs
+        # number of outputs is graph-dependent
+        declaredOutputTypes = self.output_types
+        self.output_types = [declaredOutputTypes[0]] * len(node.outputs)
+        try:
+            return super().typeInferOutput(ctxt, node, operatorRepresentation)
+        finally:
+            self.output_types = declaredOutputTypes
+
+    def _inferNumLevels(self, inputs: List[VariableBuffer],
+                        operatorRepresentation: OperatorRepresentation) -> Optional[List[int]]:
+        return [inputs[0].nLevels] * operatorRepresentation['num_outputs']
+
+    def _inferSignedness(self, inputs: List[VariableBuffer],
+                         operatorRepresentation: OperatorRepresentation) -> Optional[List[bool]]:
+        return [bool(inputs[0]._signed)] * operatorRepresentation['num_outputs']
