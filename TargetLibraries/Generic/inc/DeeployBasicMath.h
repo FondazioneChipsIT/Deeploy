@@ -70,5 +70,6 @@
 #include "kernel/Softmax.h"
 #include "kernel/Sqrt.h"
 #include "kernel/Swish.h"
+#include "kernel/Tanh.h"
 
 #endif //__DEEPLOY_BASIC_MATH_HEADER_

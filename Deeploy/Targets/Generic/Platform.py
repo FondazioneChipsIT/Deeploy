@@ -18,14 +18,14 @@ from Deeploy.Targets.Generic.Bindings import BasicAddBindings, BasicAveragePool1
     BasicQuantBindings, BasicReduceMeanBindings, BasicReduceSumBindings, BasicReluBinding, BasicReshapeBindings, \
     BasicResizeBindings, BasicRQIntegerDivBinding, BasicRQSBindings, BasicRQSGELUBinding, BasicScatterBindings, \
     BasicSeluBindings, BasicSigmoidBindings, BasicSliceBindings, BasicSoftmaxBindings, BasicSqrtBindings, \
-    BasicSubBindings, BasicSwishBindings, BasicTransposeBindings, DummyBinding
+    BasicSubBindings, BasicSwishBindings, BasicTanhBindings, BasicTransposeBindings, DummyBinding
 from Deeploy.Targets.Generic.Layers import AddLayer, AveragePoolLayer, BatchNormalizationLayer, CeilLayer, ClipLayer, \
     Col2ImLayer, ConcatLayer, ConvLayer, ConvTransposeLayer, DebugPrintLayer, DequantLayer, DivLayer, EluLayer, \
     ExpLayer, FloorLayer, GatherLayer, GELULayer, GEMMLayer, GlobalAveragePoolLayer, GlobalMaxPoolLayer, \
     GroupNormLayer, InstanceNormLayer, ITAMaxLayer, LayerNormLayer, LeakyReluLayer, MatMulLayer, MaxPoolLayer, \
     MulLayer, PadLayer, PowLayer, QuantLayer, ReduceMeanLayer, ReduceSumLayer, ReluLayer, RequantShiftLayer, \
     ReshapeLayer, ResizeLayer, RQIntegerDivLayer, RQSiGELULayer, ScatterLayer, SeluLayer, SigmoidLayer, SliceLayer, \
-    SoftmaxLayer, SqrtLayer, SubLayer, SwishLayer, TransposeLayer
+    SoftmaxLayer, SqrtLayer, SubLayer, SwishLayer, TanhLayer, TransposeLayer
 from Deeploy.Targets.Generic.Parsers import AddParser, AveragePool1DParser, AveragePool2DParser, BatchNormParser, \
     CeilParser, ClipParser, Col2ImParser, ConcatParser, ConvTranspose1DParser, ConvTranspose2DParser, DebugParser, \
     DequantParser, DivParser, DummyParser, EluParser, ExpParser, FlattenParser, FloorParser, GatherParser, GELUParser, \
@@ -35,7 +35,8 @@ from Deeploy.Targets.Generic.Parsers import AddParser, AveragePool1DParser, Aver
     LeakyReluParser, MatMulParser, MaxPool1DParser, MulParser, Pad1DParser, Pad2DParser, PowParser, QuantParser, \
     ReduceMeanParser, ReduceSumParser, ReluParser, RequantShiftParser, ReshapeParser, ResizeParser, \
     RQIntegerDivParser, RQSiGELUParser, ScatterParser, SeluParser, SigmoidParser, SliceParser, SoftmaxParser, \
-    SqrtParser, SubParser, SwishParser, TransposeParser, UnsqueezeParser, iLayerNormParser, iSoftmaxParser
+    SqrtParser, SubParser, SwishParser, TanhParser, TransposeParser, UnsqueezeParser, iLayerNormParser, \
+    iSoftmaxParser
 from Deeploy.Targets.Generic.Templates import AllocateTemplate, FreeTemplate
 from Deeploy.Targets.Generic.TopologyOptimizationPasses.Passes import DequantPatternPass, ExtractPaddingFromConvPass, \
     ExtractPaddingFromPoolPass, MatMulAddMergePass, MergeConstAddAndRequantPass, QuantPatternPass, \
@@ -88,6 +89,7 @@ CeilMapper = NodeMapper(CeilParser(), BasicCeilBindings)
 FloorMapper = NodeMapper(FloorParser(), BasicFloorBindings)
 ClipMapper = NodeMapper(ClipParser(), BasicClipBindings)
 ExpMapper = NodeMapper(ExpParser(), BasicExpBindings)
+TanhMapper = NodeMapper(TanhParser(), BasicTanhBindings)
 SigmoidMapper = NodeMapper(SigmoidParser(), BasicSigmoidBindings)
 SwishMapper = NodeMapper(SwishParser(), BasicSwishBindings)
 HardSigmoidMapper = NodeMapper(HardSigmoidParser(), BasicHardSigmoidBindings)
@@ -158,6 +160,7 @@ GenericMapping = {
     'Clip': ClipLayer([ClipMapper]),
     'Exp': ExpLayer([ExpMapper]),
     'Selu': SeluLayer([SeluMapper]),
+    'Tanh': TanhLayer([TanhMapper]),
     'Sigmoid': SigmoidLayer([SigmoidMapper]),
     'Swish': SwishLayer([SwishMapper]),
     'HardSigmoid': SigmoidLayer([HardSigmoidMapper]),

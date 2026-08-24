@@ -732,6 +732,10 @@ class ExpLayer(SingleOperationPerElementLayer):
     pass
 
 
+class TanhLayer(SingleOperationPerElementLayer):
+    pass
+
+
 class SigmoidLayer(ONNXLayer):
 
     def computeOps(self):

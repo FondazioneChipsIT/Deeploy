@@ -19,11 +19,11 @@ from Deeploy.Targets.Generic.Templates import AddTemplate, BatchNormalizationTem
     FloatHardSigmoidTemplate, FloatHardSwishTemplate, FloatInstanceNormTemplate, FloatLayernormTemplate, \
     FloatLeakyReluTemplate, FloatMatMulTemplate, FloatMaxPoolTemplate, FloatMulTemplate, FloatPadTemplate, \
     FloatPowTemplate, FloatReduceMeanTemplate, FloatReluTemplate, FloatSeluTemplate, FloatSigmoidTemplate, \
-    FloatSoftmaxTemplate, FloatSqrtTemplate, FloatSubTemplate, FloatSwishTemplate, GatherTemplate, GemmTemplate, \
-    IntegerDivTemplate, ITAMaxTemplate, ITAPartialMaxTemplate, MatMulTemplate, MaxPoolTemplate, MulTemplate, \
-    PadTemplate, QuantTemplate, ReduceMeanTemplate, ReduceSumTemplate, RequantShiftTemplate, ReshapeTemplate, \
-    ResizeTemplate, RQIntegerDivTemplate, RQSiGELUTemplate, ScatterTemplate, SliceTemplate, SubTemplate, \
-    TransposeTemplate, iGELUTemplate, iLayernormTemplate, iRMSNormTemplate, iSoftmaxTemplate
+    FloatSoftmaxTemplate, FloatSqrtTemplate, FloatSubTemplate, FloatSwishTemplate, FloatTanhTemplate, GatherTemplate, \
+    GemmTemplate, IntegerDivTemplate, ITAMaxTemplate, ITAPartialMaxTemplate, MatMulTemplate, MaxPoolTemplate, \
+    MulTemplate, PadTemplate, QuantTemplate, ReduceMeanTemplate, ReduceSumTemplate, RequantShiftTemplate, \
+    ReshapeTemplate, ResizeTemplate, RQIntegerDivTemplate, RQSiGELUTemplate, ScatterTemplate, SliceTemplate, \
+    SubTemplate, TransposeTemplate, iGELUTemplate, iLayernormTemplate, iRMSNormTemplate, iSoftmaxTemplate
 from Deeploy.Targets.Generic.TypeCheckers import AddChecker, BatchNormChecker, ConcatChecker, ConvChecker, \
     DebugPrintChecker, DequantChecker, DivChecker, DummyChecker, GatherChecker, GELUChecker, GEMMChecker, \
     LayerNormChecker, MatMulChecker, MaxPoolChecker, MulChecker, PadChecker, PassThroughTypeChecker, QuantChecker, \
@@ -382,6 +382,11 @@ BasicClipBindings = [
 
 BasicExpBindings = [
     NodeBinding(DummyChecker([PointerClass(float32_t)], [PointerClass(float32_t)]), FloatExpTemplate.referenceTemplate,
+                BasicTransformer),
+]
+
+BasicTanhBindings = [
+    NodeBinding(DummyChecker([PointerClass(float32_t)], [PointerClass(float32_t)]), FloatTanhTemplate.referenceTemplate,
                 BasicTransformer),
 ]
 
