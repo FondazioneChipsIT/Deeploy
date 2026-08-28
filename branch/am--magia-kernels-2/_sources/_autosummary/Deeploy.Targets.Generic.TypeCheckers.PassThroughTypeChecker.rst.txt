@@ -1,0 +1,41 @@
+.. SPDX-FileCopyrightText: 2024 ETH Zurich and University of Bologna
+..
+.. SPDX-License-Identifier: Apache-2.0
+
+Deeploy.Targets.Generic.TypeCheckers.PassThroughTypeChecker
+===========================================================
+
+.. currentmodule:: Deeploy.Targets.Generic.TypeCheckers
+
+.. autoclass:: PassThroughTypeChecker
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   
+   .. rubric:: Methods
+   .. automethod:: __init__
+
+   .. autosummary::
+   
+      ~PassThroughTypeChecker.__init__
+      ~PassThroughTypeChecker.annotateDict
+      ~PassThroughTypeChecker.checkOutputType
+      ~PassThroughTypeChecker.signature
+      ~PassThroughTypeChecker.typeCheck
+      ~PassThroughTypeChecker.typeCheckNodeInputs
+      ~PassThroughTypeChecker.typeInferGlobalCtxt
+      ~PassThroughTypeChecker.typeInferOutput
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PassThroughTypeChecker.typeDict
+   
+   

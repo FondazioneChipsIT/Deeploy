@@ -1,0 +1,39 @@
+.. SPDX-FileCopyrightText: 2024 ETH Zurich and University of Bologna
+..
+.. SPDX-License-Identifier: Apache-2.0
+
+Deeploy.Targets.Generic.Parsers.LeakyReluParser
+===============================================
+
+.. currentmodule:: Deeploy.Targets.Generic.Parsers
+
+.. autoclass:: LeakyReluParser
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   
+   .. rubric:: Methods
+   .. automethod:: __init__
+
+   .. autosummary::
+   
+      ~LeakyReluParser.__init__
+      ~LeakyReluParser.parse
+      ~LeakyReluParser.parseInputs
+      ~LeakyReluParser.parseNode
+      ~LeakyReluParser.parseNodeCtxt
+      ~LeakyReluParser.parseOutputs
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~LeakyReluParser.operatorRepresentation
+   
+   

@@ -1,0 +1,47 @@
+.. SPDX-FileCopyrightText: 2024 ETH Zurich and University of Bologna
+..
+.. SPDX-License-Identifier: Apache-2.0
+
+Deeploy.Targets.Generic.Layers.LeakyReluLayer
+=============================================
+
+.. currentmodule:: Deeploy.Targets.Generic.Layers
+
+.. autoclass:: LeakyReluLayer
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   
+   .. rubric:: Methods
+   .. automethod:: __init__
+
+   .. autosummary::
+   
+      ~LeakyReluLayer.__init__
+      ~LeakyReluLayer.bind
+      ~LeakyReluLayer.broadcast
+      ~LeakyReluLayer.codeTransform
+      ~LeakyReluLayer.computeOps
+      ~LeakyReluLayer.computeShapes
+      ~LeakyReluLayer.discardCurrentMapper
+      ~LeakyReluLayer.generate
+      ~LeakyReluLayer.parse
+      ~LeakyReluLayer.resetDiscardedMappers
+      ~LeakyReluLayer.typeCheck
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~LeakyReluLayer.maps
+      ~LeakyReluLayer.mapper
+      ~LeakyReluLayer.discardedMappers
+      ~LeakyReluLayer.node
+   
+   

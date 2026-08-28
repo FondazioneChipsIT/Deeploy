@@ -1,0 +1,38 @@
+.. SPDX-FileCopyrightText: 2024 ETH Zurich and University of Bologna
+..
+.. SPDX-License-Identifier: Apache-2.0
+
+Deeploy.Targets.PULPOpen\_iDMA
+==============================
+
+.. automodule:: Deeploy.Targets.PULPOpen_iDMA
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   Bindings
+   Platform
+   Tiler
+

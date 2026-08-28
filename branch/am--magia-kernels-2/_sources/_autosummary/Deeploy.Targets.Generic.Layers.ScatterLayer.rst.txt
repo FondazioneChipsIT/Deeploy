@@ -1,0 +1,47 @@
+.. SPDX-FileCopyrightText: 2024 ETH Zurich and University of Bologna
+..
+.. SPDX-License-Identifier: Apache-2.0
+
+Deeploy.Targets.Generic.Layers.ScatterLayer
+===========================================
+
+.. currentmodule:: Deeploy.Targets.Generic.Layers
+
+.. autoclass:: ScatterLayer
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   
+   .. rubric:: Methods
+   .. automethod:: __init__
+
+   .. autosummary::
+   
+      ~ScatterLayer.__init__
+      ~ScatterLayer.bind
+      ~ScatterLayer.broadcast
+      ~ScatterLayer.codeTransform
+      ~ScatterLayer.computeOps
+      ~ScatterLayer.computeShapes
+      ~ScatterLayer.discardCurrentMapper
+      ~ScatterLayer.generate
+      ~ScatterLayer.parse
+      ~ScatterLayer.resetDiscardedMappers
+      ~ScatterLayer.typeCheck
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ScatterLayer.maps
+      ~ScatterLayer.mapper
+      ~ScatterLayer.discardedMappers
+      ~ScatterLayer.node
+   
+   
