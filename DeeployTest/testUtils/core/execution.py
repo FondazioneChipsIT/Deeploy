@@ -12,6 +12,7 @@ from Deeploy.Logging import DEFAULT_LOGGER as log
 
 from .config import DeeployTestConfig
 from .output_parser import TestResult, parse_test_output
+from .perfetto import convert_vcd_to_perfetto, vcd_events, vcd_path, warn_if_unsupported
 
 
 def generate_network(config: DeeployTestConfig, skip: bool = False) -> None:
@@ -104,6 +105,14 @@ def configure_cmake(config: DeeployTestConfig) -> None:
     else:
         cmd.append("-Dgvsoc_simulation=OFF")
 
+    # Always passed, so that a previous profiling run cannot leave VCD dumping
+    # enabled in the CMake cache for subsequent plain runs.
+    if config.dump_vcd and config.simulator == 'gvsoc':
+        cmd.append("-Dgvsoc_vcd=ON")
+        cmd.append("-Dgvsoc_vcd_events=" + ";".join(vcd_events(config)))
+    else:
+        cmd.append("-Dgvsoc_vcd=OFF")
+
     # Last argument is the source directory
     script_dir = Path(__file__).parent.parent.parent
     cmd.append(str(script_dir.parent))
@@ -169,6 +178,13 @@ def run_simulation(config: DeeployTestConfig, skip: bool = False) -> TestResult:
 
     if config.simulator == 'none':
         raise RuntimeError("No simulator specified!")
+
+    # Drop a stale dump, so that a crashed simulation cannot be silently
+    # profiled from the previous run's data.
+    if config.dump_vcd:
+        vcd = vcd_path(config)
+        if vcd.is_file():
+            vcd.unlink()
 
     if config.simulator == 'host':
         # Run binary directly
@@ -238,6 +254,10 @@ def run_complete_test(config: DeeployTestConfig, skipgen: bool = False, skipsim:
     """
     log.info(f"################## Testing {config.test_name} on {config.platform} Platform ##################")
 
+    if config.dump_vcd and warn_if_unsupported(config):
+        config.vcd = False
+        config.profile = False
+
     # Step 1: Generate network
     generate_network(config, skip = skipgen)
 
@@ -249,5 +269,9 @@ def run_complete_test(config: DeeployTestConfig, skipgen: bool = False, skipsim:
 
     # Step 4: Run simulation
     result = run_simulation(config, skip = skipsim)
+
+    # Step 5: Convert the VCD dump to a Perfetto trace (best-effort)
+    if config.profile and not skipsim:
+        convert_vcd_to_perfetto(config)
 
     return result

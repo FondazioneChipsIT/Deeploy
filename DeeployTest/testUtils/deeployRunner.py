@@ -101,6 +101,30 @@ class DeeployRunnerArgumentParser(argparse.ArgumentParser):
                           action = 'store_true',
                           default = False,
                           help = 'Wrap each layer with PULP perf-counter microbenchmark\n')
+        self.add_argument('--vcd',
+                          dest = 'vcd',
+                          action = 'store_true',
+                          default = False,
+                          help = 'Dump GVSoC VCD event traces to <build>/gvsoc_workdir/all.vcd\n')
+        self.add_argument('--profile',
+                          dest = 'profile',
+                          action = 'store_true',
+                          default = False,
+                          help = 'Dump GVSoC VCD event traces and convert them to a Perfetto trace '
+                          '(implies --vcd; pass --vcd as well to keep the raw dump)\n')
+        self.add_argument('--vcd-events',
+                          metavar = '<selector>',
+                          dest = 'vcd_events',
+                          nargs = '*',
+                          default = None,
+                          help = 'Override the gvsoc --event selectors used by --vcd/--profile. '
+                          'Beware: asking gvsoc for every event (".*") makes it segfault\n')
+        self.add_argument('--vcd-include',
+                          metavar = '<regex>',
+                          dest = 'vcd_include',
+                          type = str,
+                          default = None,
+                          help = 'Override the gvsoc2perfetto --include regex used by --profile\n')
         self.add_argument('--toolchain',
                           metavar = '<LLVM|GCC>',
                           dest = 'toolchain',
@@ -270,6 +294,10 @@ def create_config_from_args(args: argparse.Namespace,
         gen_args = gen_args_list,
         verbose = args.verbose,
         debug = args.debug,
+        vcd = args.vcd,
+        profile = args.profile,
+        vcd_events = args.vcd_events,
+        vcd_include = args.vcd_include,
     )
 
     return config
@@ -322,6 +350,8 @@ def print_configuration(config: DeeployTestConfig):
     print(f"\n{BOLD}Runtime Configuration:{RESET}")
     print(f"  Verbosity Level     : {config.verbose}")
     print(f"  Debug Mode          : {'Enabled' if config.debug else 'Disabled'}")
+    print(f"  VCD Dump            : {'Enabled' if config.dump_vcd else 'Disabled'}")
+    print(f"  Perfetto Conversion : {'Enabled' if config.profile else 'Disabled'}")
     if config.gen_args:
         print(f"  Generation Arguments: {' '.join(config.gen_args)}")
 

@@ -50,6 +50,10 @@ def create_test_config(
     randomized_mem_scheduler: bool = False,
     profile_untiled: bool = False,
     gen_args: Optional[List[str]] = None,
+    vcd: bool = False,
+    profile: bool = False,
+    vcd_events: Optional[List[str]] = None,
+    vcd_include: Optional[str] = None,
 ) -> DeeployTestConfig:
 
     test_dir = f"Tests/{test_name}"
@@ -109,6 +113,10 @@ def create_test_config(
         toolchain_install_dir = toolchain_dir,
         cmake_args = cmake_args_list,
         gen_args = gen_args_list,
+        vcd = vcd,
+        profile = profile,
+        vcd_events = vcd_events,
+        vcd_include = vcd_include,
     )
 
     return config

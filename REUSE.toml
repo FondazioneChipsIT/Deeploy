@@ -34,3 +34,7 @@ SPDX-License-Identifier = "CC-BY-ND-4.0"
 path = ".vscode/*.json"
 SPDX-FileCopyrightText = "2023 ETH Zurich and University of Bologna"
 SPDX-License-Identifier = "CC-BY-ND-4.0"
+[[annotations]]
+path = "scripts/gvsoc2perfetto-rs/Cargo.lock"
+SPDX-FileCopyrightText = "2026 ETH Zurich, University of Bologna and Fondazione Chips-IT"
+SPDX-License-Identifier = "Apache-2.0"

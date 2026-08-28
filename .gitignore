@@ -23,6 +23,7 @@ dist
 install/
 compile_commands.json
 toolchain/**/*/
+scripts/gvsoc2perfetto-rs/target/
 
 
 # Node

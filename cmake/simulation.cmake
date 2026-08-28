@@ -16,6 +16,11 @@ set(banshee_stack_size 16777216 CACHE STRING "Stack size of banshee threads")
 
 OPTION(banshee_simulation "Optimize binary for banshee simulation" OFF)
 OPTION(gvsoc_simulation "adapt preprocessor macro for gvsoc simulation" OFF)
+OPTION(gvsoc_vcd "dump gvsoc VCD event traces during simulation" OFF)
+# Which gvsoc events end up in the dump. Tracing too many at once makes gvsoc
+# segfault (--event=.* reliably does), so this defaults to the cluster cores
+# only. Semicolon separated list; each entry becomes one --event flag.
+set(gvsoc_vcd_events "chip/cluster/pe.*" CACHE STRING "gvsoc event selectors used when gvsoc_vcd is ON")
 if(banshee_simulation)
   add_compile_definitions(BANSHEE_SIMULATION)
 endif()
@@ -35,6 +40,7 @@ macro(print_simulation_config)
 	message(STATUS "[Simulator]   banshee_simulation     = " ${banshee_simulation})
 	message(STATUS "[Simulator]   banshee_configuration  = " ${BANSHEE_CONFIG})
 	message(STATUS "[Simulator]   gvsoc_simulation       = " ${gvsoc_simulation})
+	message(STATUS "[Simulator]   gvsoc_vcd              = " ${gvsoc_vcd})
 	message(STATUS "[Simulator]   banshee_stack_size     = " ${banshee_stack_size})
 	message(STATUS "[Simulator]   num_threads            = " ${num_threads})
 	message(STATUS "================================================================================")
@@ -92,6 +98,14 @@ macro(add_gvsoc_emulation name target)
 	make_directory(${GVSOC_WORKDIR})
 	set(GVSOC_EXECUTABLE "${GVSOC_INSTALL_DIR}/bin/gvsoc")
 	set(GVSOC_BINARY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${name}")
+	# NB: --event-format=vcd is mandatory. Without it gvsoc dumps FST into a file
+	# still named all.vcd, which the gvsoc2perfetto converter cannot read.
+	if(gvsoc_vcd)
+		list(APPEND GVSOC_EXTRA_FLAGS --vcd --event-format=vcd)
+		foreach(event ${gvsoc_vcd_events})
+			list(APPEND GVSOC_EXTRA_FLAGS "--event=${event}")
+		endforeach()
+	endif()
 	add_custom_target(gvsoc_${name}
 		DEPENDS ${name}
 		WORKING_DIRECTORY ${GVSOC_WORKDIR}

@@ -6,6 +6,7 @@ from .config import DeeployTestConfig
 from .execution import build_binary, configure_cmake, generate_network, run_complete_test, run_simulation
 from .output_parser import TestResult
 from .paths import get_test_paths
+from .perfetto import convert_vcd_to_perfetto
 
 __all__ = [
     'DeeployTestConfig',
@@ -16,4 +17,5 @@ __all__ = [
     'build_binary',
     'run_simulation',
     'run_complete_test',
+    'convert_vcd_to_perfetto',
 ]
