@@ -50,6 +50,15 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         default = [],
         help = "Additional CMake arguments (can be used multiple times)",
     )
+    # No short form: pytest already owns -s as --capture=no.
+    parser.addoption(
+        "--simulator",
+        action = "store",
+        default = None,
+        choices = ["gvsoc", "vsim", "vsim.gui", "qsim", "qsim.gui", "fpga"],
+        help = "Override the simulator for platforms whose harness builds more than one flow "
+        "(PULPOpen_iDMA). Other platforms ignore it and keep their own simulator.",
+    )
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -70,6 +79,8 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "gap9_tiled: mark test as a GAP9 platform test (tiled)")
     config.addinivalue_line("markers", "pulpopen: mark test as a PULPOpen platform test (untiled)")
     config.addinivalue_line("markers", "pulpopen_tiled: mark test as a PULPOpen platform test (tiled)")
+    config.addinivalue_line("markers", "pulpopen_idma: mark test as a PULPOpen + iDMA test (untiled)")
+    config.addinivalue_line("markers", "pulpopen_idma_tiled: mark test as a PULPOpen + iDMA test (tiled)")
     config.addinivalue_line("markers", "pulpcluster_idma: mark test as a standalone PULP cluster (no FC) + iDMA test (untiled)")
     config.addinivalue_line("markers", "pulpcluster_idma_tiled: mark test as a standalone PULP cluster (no FC) + iDMA test (tiled)")
     # corev-gcc only: never select these alongside an RI5CY marker, see test_platforms.py
@@ -164,3 +175,9 @@ def toolchain(request):
 def cmake_args(request):
     """Return additional CMake arguments."""
     return request.config.getoption("--cmake-args")
+
+
+@pytest.fixture
+def simulator(request):
+    """Return the simulator override, or None when the test should keep its own default."""
+    return request.config.getoption("--simulator")

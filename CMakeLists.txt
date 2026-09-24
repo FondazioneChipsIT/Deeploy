@@ -210,11 +210,13 @@ endif()
 if(PULP_IS_PULP_PLATFORM)
 
   if(PULP_CORE STREQUAL cv32e40p)
-    # corev-gcc only: cv.* mnemonics and __builtin_riscv_cv_* intrinsics.
+    # cv.* mnemonics and the CoreV intrinsics need a CORE-V toolchain either way:
+    # corev-gcc or corev-llvm, not the stock pulp ones.
     if(TOOLCHAIN STREQUAL LLVM)
-      message(FATAL_ERROR "platform=${platform} requires -DTOOLCHAIN=GCC with a corev-gcc install")
+      set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_LIST_DIR}/cmake/pulp/toolchain_llvm_cv32e40p.cmake)
+    else()
+      set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_LIST_DIR}/cmake/pulp/toolchain_gcc_cv32e40p.cmake)
     endif()
-    set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_LIST_DIR}/cmake/pulp/toolchain_gcc_cv32e40p.cmake)
   elseif(TOOLCHAIN STREQUAL LLVM)
     set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_LIST_DIR}/cmake/pulp/toolchain_llvm.cmake)
   else()

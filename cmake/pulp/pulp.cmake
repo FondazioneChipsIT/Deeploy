@@ -16,6 +16,10 @@ set(DEEPLOY_ARCH PULP)
 
 set(num_threads  ${NUM_CORES})
 
+# Boot address passed to the testbench as the +ENTRY_POINT plusarg. It must match
+# the ELF entry point: link.ld moves .vectors forward when L2 private bank 0 overflows.
+set(ENTRY_POINT "0x1c008080" CACHE STRING "Entry point passed to the pulp-open RTL testbench")
+
 macro(add_pulp_open_qsim_simulation name)
 
   set(TARGET_NAME ${name})
@@ -43,8 +47,6 @@ macro(add_pulp_open_qsim_simulation name)
       COMMENT "Creating ${dir}"
     )
   endforeach()
-
-  set(ENTRY_POINT "0x1c008080")
 
   add_custom_target(qsim.gui_${name}
     DEPENDS ${name} ${SIM_DIRS}
@@ -134,8 +136,6 @@ macro(add_pulp_open_vsim_simulation name)
       COMMENT "Creating ${dir}"
     )
   endforeach()
-
-  set(ENTRY_POINT "0x1c008080")
 
   add_custom_target(vsim_${name}
     DEPENDS ${name} ${SIM_DIRS}
