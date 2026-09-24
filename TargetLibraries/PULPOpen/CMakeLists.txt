@@ -41,6 +41,18 @@ add_subdirectory(../third_party/pulp-nn-mixed ${CMAKE_CURRENT_BINARY_DIR}/pulp-n
 target_include_directories(pulp-nn-mixed PUBLIC ${PULP_SDK_INCLUDES})
 target_compile_options(pulp-nn-mixed PUBLIC ${PULP_SDK_COMPILE_FLAGS})
 
+# TEMPORARY: corev-llvm 23 cannot select the post-increment loads it forms from these
+# kernels' sub-byte unpack helpers ("Cannot select: load <post-inc>"), 197 of 222 of
+# them. Only this directory gives up xcvmem; per-source options come last, so this
+# -march wins over the toolchain's. Remove once the toolchain is fixed.
+if(PULP_CORE STREQUAL cv32e40p AND TOOLCHAIN STREQUAL LLVM)
+  file(GLOB PULP_NN_ADD_SOURCES
+    ${CMAKE_CURRENT_LIST_DIR}/../third_party/pulp-nn-mixed/XpulpV2/32bit/src/Add/*.c)
+  set_source_files_properties(${PULP_NN_ADD_SOURCES}
+    TARGET_DIRECTORY pulp-nn-mixed
+    PROPERTIES COMPILE_OPTIONS -march=${CV32_ISA_NO_XCVMEM})
+endif()
+
 target_link_libraries(deeploypulp PUBLIC pulp-nn-mixed)
 target_link_libraries(deeploypulp INTERFACE pulp-sdk)
 target_sources(deeploypulp INTERFACE $<TARGET_OBJECTS:pulp-sdk>)

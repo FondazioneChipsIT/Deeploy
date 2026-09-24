@@ -26,6 +26,13 @@
 # Also included from the toolchain files, so read only `platform` and set only
 # PULP_* names -- never ISA/FC/PE, which those files re-set at project() time.
 
+# The CV32E40P ISA/ABI, mirroring PULP_CV32_MARCH in the SDK's pulp.mk. A list so a
+# toolchain file can drop a single extension it cannot handle. zfinx rather than f:
+# the core keeps floats in the integer regfile, hence ilp32 and not ilp32f.
+set(PULP_CV32_BASE_ISA rv32imc)
+set(PULP_CV32_EXTENSIONS xcvalu xcvbi xcvbitmanip xcvhwlp xcvmac xcvmem xcvsimd xcvelw zfinx)
+set(PULP_CV32_ABI ilp32)
+
 set(PULP_IS_PULP_PLATFORM TRUE)
 
 if(platform STREQUAL Siracusa OR platform STREQUAL Siracusa_w_neureka)
