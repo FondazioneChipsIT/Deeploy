@@ -6,7 +6,9 @@
 # toolchain_gcc.cmake so the RI5CY platforms stay untouched.
 # Needs -DTOOLCHAIN=GCC -DTOOLCHAIN_INSTALL_DIR=<corev-gcc>, not pulp-gcc.
 
-list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES TOOLCHAIN_INSTALL_DIR)
+# try_compile() re-reads this file in a scope where -D cache vars are invisible.
+list(APPEND CMAKE_TRY_COMPILE_PLATFORM_VARIABLES platform TOOLCHAIN_INSTALL_DIR)
+include(${CMAKE_CURRENT_LIST_DIR}/pulp_platforms.cmake)
 
 if(NOT TOOLCHAIN_INSTALL_DIR)
   message(FATAL_ERROR "TOOLCHAIN_INSTALL_DIR is not set; ${platform} needs a corev-gcc install")
@@ -28,8 +30,8 @@ set(CMAKE_OBJDUMP ${TOOLCHAIN_PREFIX}-objdump)
 set(CMAKE_AR ${TOOLCHAIN_PREFIX}-ar)
 set(SIZE ${TOOLCHAIN_PREFIX}-size)
 
-set(ISA rv32imc_xcvalu_xcvbi_xcvbitmanip_xcvhwlp_xcvmac_xcvmem_xcvsimd_xcvelw_zfinx)
-set(ABI ilp32)
+string(JOIN "_" ISA ${PULP_CV32_BASE_ISA} ${PULP_CV32_EXTENSIONS})
+set(ABI ${PULP_CV32_ABI})
 set(PE 8)
 
 # -mtune=cv32e40p only exists in newer corev-gcc builds; sniff it as pulp.mk does.
