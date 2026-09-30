@@ -15,7 +15,11 @@ PULP_SDK_PLATFORMS = (
     "PULPOpen_iDMA",
     "PULPCluster_iDMA",
     "PULPCluster_iDMA_CV32E40P",
+    "OpenTitanCluster_iDMA",
 )
+
+# No simulation target in Deeploy: built for RTL, run from the host SoC flow.
+BUILD_ONLY_PLATFORMS = ("OpenTitanCluster_iDMA",)
 
 
 @dataclass

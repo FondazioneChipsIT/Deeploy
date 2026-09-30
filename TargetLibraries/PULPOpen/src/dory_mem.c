@@ -5,6 +5,10 @@
  */
 
 #include "dory_mem.h"
+
+// No flash/ram devices at all (e.g. OT cluster): L3 must not be used
+#ifndef DEEPLOY_NO_L3
+
 #include "bsp/bsp.h"
 #include "bsp/flash.h"
 #include "bsp/fs.h"
@@ -174,3 +178,5 @@ size_t load_file_to_local(const void *dest, const char *filename) {
 
   return offset;
 }
+
+#endif // DEEPLOY_NO_L3

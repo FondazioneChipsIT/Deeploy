@@ -363,6 +363,7 @@ def main(default_platform: Optional[str] = None,
         "pulpopen_idma": "PULPOpen_iDMA",
         "pulpcluster_idma": "PULPCluster_iDMA",
         "pulpcluster_idma_cv32e40p": "PULPCluster_iDMA_CV32E40P",
+        "opentitancluster_idma": "OpenTitanCluster_iDMA",
     }
 
     if args.platform:
@@ -407,6 +408,7 @@ def main(default_platform: Optional[str] = None,
             "PULPOpen_iDMA": "qsim",
             "PULPCluster_iDMA": "qsim",
             "PULPCluster_iDMA_CV32E40P": "qsim",
+            "OpenTitanCluster_iDMA": "none",
         }
         simulator = simulator_map.get(platform, "host")
         log.info(f"No simulator specified, using default for {platform}: {simulator}")
