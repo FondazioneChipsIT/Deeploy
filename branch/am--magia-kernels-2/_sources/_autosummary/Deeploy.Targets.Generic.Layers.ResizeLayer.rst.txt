@@ -1,0 +1,47 @@
+.. SPDX-FileCopyrightText: 2024 ETH Zurich and University of Bologna
+..
+.. SPDX-License-Identifier: Apache-2.0
+
+Deeploy.Targets.Generic.Layers.ResizeLayer
+==========================================
+
+.. currentmodule:: Deeploy.Targets.Generic.Layers
+
+.. autoclass:: ResizeLayer
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   
+   .. rubric:: Methods
+   .. automethod:: __init__
+
+   .. autosummary::
+   
+      ~ResizeLayer.__init__
+      ~ResizeLayer.bind
+      ~ResizeLayer.broadcast
+      ~ResizeLayer.codeTransform
+      ~ResizeLayer.computeOps
+      ~ResizeLayer.computeShapes
+      ~ResizeLayer.discardCurrentMapper
+      ~ResizeLayer.generate
+      ~ResizeLayer.parse
+      ~ResizeLayer.resetDiscardedMappers
+      ~ResizeLayer.typeCheck
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ResizeLayer.maps
+      ~ResizeLayer.mapper
+      ~ResizeLayer.discardedMappers
+      ~ResizeLayer.node
+   
+   

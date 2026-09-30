@@ -1,0 +1,41 @@
+.. SPDX-FileCopyrightText: 2024 ETH Zurich and University of Bologna
+..
+.. SPDX-License-Identifier: Apache-2.0
+
+Deeploy.Targets.Generic.TypeCheckers.SplitChecker
+=================================================
+
+.. currentmodule:: Deeploy.Targets.Generic.TypeCheckers
+
+.. autoclass:: SplitChecker
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   
+   .. rubric:: Methods
+   .. automethod:: __init__
+
+   .. autosummary::
+   
+      ~SplitChecker.__init__
+      ~SplitChecker.annotateDict
+      ~SplitChecker.checkOutputType
+      ~SplitChecker.signature
+      ~SplitChecker.typeCheck
+      ~SplitChecker.typeCheckNodeInputs
+      ~SplitChecker.typeInferGlobalCtxt
+      ~SplitChecker.typeInferOutput
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SplitChecker.typeDict
+   
+   

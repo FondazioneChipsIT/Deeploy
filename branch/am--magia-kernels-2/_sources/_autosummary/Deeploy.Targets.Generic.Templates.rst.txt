@@ -1,0 +1,116 @@
+.. SPDX-FileCopyrightText: 2024 ETH Zurich and University of Bologna
+..
+.. SPDX-License-Identifier: Apache-2.0
+
+Deeploy.Targets.Generic.Templates
+=================================
+
+.. automodule:: Deeploy.Targets.Generic.Templates
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   AddTemplate
+   AllocateTemplate
+   BatchNormalizationTemplate
+   ClosureTemplate
+   Col2ImTemplate
+   ConcatTemplate
+   ConvTemplate
+   ConvTransposeTemplate
+   DWConvTemplate
+   DebugPrintTemplate
+   DequantTemplate
+   DummyTemplate
+   FloatAddTemplate
+   FloatAveragePoolTemplate
+   FloatCeilTemplate
+   FloatClipTemplate
+   FloatConvTemplate
+   FloatDWConvTemplate
+   FloatDivTemplate
+   FloatEluTemplate
+   FloatExpTemplate
+   FloatFloorTemplate
+   FloatGELUTemplate
+   FloatGemmTemplate
+   FloatGlobalAveragePoolTemplate
+   FloatGlobalMaxPoolTemplate
+   FloatGroupNormTemplate
+   FloatHardSigmoidTemplate
+   FloatHardSwishTemplate
+   FloatInstanceNormTemplate
+   FloatLayernormTemplate
+   FloatLeakyReluTemplate
+   FloatMatMulTemplate
+   FloatMaxPoolTemplate
+   FloatMulTemplate
+   FloatPadTemplate
+   FloatPowTemplate
+   FloatReduceMeanTemplate
+   FloatReduceSumTemplate
+   FloatReluTemplate
+   FloatSeluTemplate
+   FloatSigmoidTemplate
+   FloatSoftmaxTemplate
+   FloatSqrtTemplate
+   FloatSubTemplate
+   FloatSwishTemplate
+   FloatTanhTemplate
+   FreeTemplate
+   GatherTemplate
+   GemmTemplate
+   ITAMaxTemplate
+   ITAPartialMaxTemplate
+   IntegerDivTemplate
+   MatMulTemplate
+   MaxPoolTemplate
+   MulTemplate
+   PadTemplate
+   QuantTemplate
+   RQAddTemplate
+   RQIntegerDivTemplate
+   RQSiGELUTemplate
+   RQSiHardswishTemplate
+   ReduceMeanTemplate
+   ReduceSumTemplate
+   RequantShiftTemplate
+   ReshapeTemplate
+   ResizeTemplate
+   ScatterTemplate
+   SkipTemplate
+   SliceTemplate
+   SplitTemplate
+   SubTemplate
+   TransposeTemplate
+   UnaryTemplate
+   iGELUTemplate
+   iHardswishTemplate
+   iLayernormTemplate
+   iNoNormTemplate
+   iRMSNormTemplate
+   iSoftmaxPreAllocatedBuffTemplate
+   iSoftmaxTemplate
+

@@ -1,0 +1,41 @@
+.. SPDX-FileCopyrightText: 2024 ETH Zurich and University of Bologna
+..
+.. SPDX-License-Identifier: Apache-2.0
+
+Deeploy.Targets.Generic.TypeCheckers.SigmoidChecker
+===================================================
+
+.. currentmodule:: Deeploy.Targets.Generic.TypeCheckers
+
+.. autoclass:: SigmoidChecker
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   
+   .. rubric:: Methods
+   .. automethod:: __init__
+
+   .. autosummary::
+   
+      ~SigmoidChecker.__init__
+      ~SigmoidChecker.annotateDict
+      ~SigmoidChecker.checkOutputType
+      ~SigmoidChecker.signature
+      ~SigmoidChecker.typeCheck
+      ~SigmoidChecker.typeCheckNodeInputs
+      ~SigmoidChecker.typeInferGlobalCtxt
+      ~SigmoidChecker.typeInferOutput
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SigmoidChecker.typeDict
+   
+   
