@@ -12,6 +12,8 @@ endif()
 
 if(PULP_CHIP STREQUAL siracusa)
   include(cmake/pulp-sdk-siracusa.cmake)
+elseif(PULP_CHIP STREQUAL opentitan_cluster)
+  include(cmake/pulp-sdk-opentitan-cluster.cmake)
 else()
   include(cmake/pulp-sdk-pulp-open.cmake)
 endif()

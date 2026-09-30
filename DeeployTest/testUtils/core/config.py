@@ -15,6 +15,7 @@ PULP_SDK_PLATFORMS = (
     "PULPOpen_iDMA",
     "PULPCluster_iDMA",
     "PULPCluster_iDMA_CV32E40P",
+    "OpenTitanCluster",
 )
 
 
