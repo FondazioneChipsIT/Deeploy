@@ -1,0 +1,39 @@
+.. SPDX-FileCopyrightText: 2024 ETH Zurich and University of Bologna
+..
+.. SPDX-License-Identifier: Apache-2.0
+
+Deeploy.Targets.Generic.Parsers.Col2ImParser
+============================================
+
+.. currentmodule:: Deeploy.Targets.Generic.Parsers
+
+.. autoclass:: Col2ImParser
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   
+   .. rubric:: Methods
+   .. automethod:: __init__
+
+   .. autosummary::
+   
+      ~Col2ImParser.__init__
+      ~Col2ImParser.parse
+      ~Col2ImParser.parseInputs
+      ~Col2ImParser.parseNode
+      ~Col2ImParser.parseNodeCtxt
+      ~Col2ImParser.parseOutputs
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Col2ImParser.operatorRepresentation
+   
+   

@@ -1,0 +1,58 @@
+.. SPDX-FileCopyrightText: 2024 ETH Zurich and University of Bologna
+..
+.. SPDX-License-Identifier: Apache-2.0
+
+Deeploy.Targets.PULPOpen\_iDMA.Deployer.OpenTitanClusterDeployer
+================================================================
+
+.. currentmodule:: Deeploy.Targets.PULPOpen_iDMA.Deployer
+
+.. autoclass:: OpenTitanClusterDeployer
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   
+   .. rubric:: Methods
+   .. automethod:: __init__
+
+   .. autosummary::
+   
+      ~OpenTitanClusterDeployer.__init__
+      ~OpenTitanClusterDeployer.annotateNCores
+      ~OpenTitanClusterDeployer.backEnd
+      ~OpenTitanClusterDeployer.bind
+      ~OpenTitanClusterDeployer.codeTransform
+      ~OpenTitanClusterDeployer.exportDeeployState
+      ~OpenTitanClusterDeployer.frontEnd
+      ~OpenTitanClusterDeployer.generateBufferAllocationCode
+      ~OpenTitanClusterDeployer.generateBufferDeAllocationCode
+      ~OpenTitanClusterDeployer.generateBufferInitializationCode
+      ~OpenTitanClusterDeployer.generateEngineInitializationCode
+      ~OpenTitanClusterDeployer.generateFunction
+      ~OpenTitanClusterDeployer.generateGlobalDefinitionCode
+      ~OpenTitanClusterDeployer.generateIOBufferInitializationCode
+      ~OpenTitanClusterDeployer.generateIncludeString
+      ~OpenTitanClusterDeployer.generateInferenceCode
+      ~OpenTitanClusterDeployer.generateInferenceInitializationCode
+      ~OpenTitanClusterDeployer.importDeeployState
+      ~OpenTitanClusterDeployer.inputs
+      ~OpenTitanClusterDeployer.lower
+      ~OpenTitanClusterDeployer.midEnd
+      ~OpenTitanClusterDeployer.numberOfOps
+      ~OpenTitanClusterDeployer.outputs
+      ~OpenTitanClusterDeployer.parse
+      ~OpenTitanClusterDeployer.prepare
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~OpenTitanClusterDeployer.worstCaseBufferSize
+   
+   

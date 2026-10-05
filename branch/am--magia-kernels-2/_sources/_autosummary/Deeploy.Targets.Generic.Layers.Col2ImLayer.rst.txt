@@ -1,0 +1,47 @@
+.. SPDX-FileCopyrightText: 2024 ETH Zurich and University of Bologna
+..
+.. SPDX-License-Identifier: Apache-2.0
+
+Deeploy.Targets.Generic.Layers.Col2ImLayer
+==========================================
+
+.. currentmodule:: Deeploy.Targets.Generic.Layers
+
+.. autoclass:: Col2ImLayer
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   
+   .. rubric:: Methods
+   .. automethod:: __init__
+
+   .. autosummary::
+   
+      ~Col2ImLayer.__init__
+      ~Col2ImLayer.bind
+      ~Col2ImLayer.broadcast
+      ~Col2ImLayer.codeTransform
+      ~Col2ImLayer.computeOps
+      ~Col2ImLayer.computeShapes
+      ~Col2ImLayer.discardCurrentMapper
+      ~Col2ImLayer.generate
+      ~Col2ImLayer.parse
+      ~Col2ImLayer.resetDiscardedMappers
+      ~Col2ImLayer.typeCheck
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Col2ImLayer.maps
+      ~Col2ImLayer.mapper
+      ~Col2ImLayer.discardedMappers
+      ~Col2ImLayer.node
+   
+   
