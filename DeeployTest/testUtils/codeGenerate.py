@@ -30,6 +30,14 @@ def _shapeBroadcast(ctxt, value, name):
     return broadcastNum
 
 
+def _testVectorQualifier(deployer: NetworkDeployer) -> str:
+    """Section qualifier forcing the test vectors into the L2 shared banks.
+    """
+    if isinstance(deployer.Platform, (PULPPlatform, MemoryPULPPlatform, MemoryPULPPlatformWrapper)):
+        return "PI_L2 "
+    return ""
+
+
 def generateTestInputsHeader(deployer: NetworkDeployer, test_inputs: List) -> str:
     vectors = []
     retStr = ""
@@ -53,7 +61,7 @@ def generateTestInputsHeader(deployer: NetworkDeployer, test_inputs: List) -> st
         vectorName = f"testInputVector{index}"
         vectors.append(vectorName)
 
-        retStr += f"{typeName} {vectorName}[] ="
+        retStr += f"{_testVectorQualifier(deployer)}{typeName} {vectorName}[] ="
         retStr += "{"
         if typeName == 'float32_t':
             list_str = (", ").join([f'{x}f' if not (np.isinf(x) or np.isnan(x)) else str(x) for x in values])
@@ -85,7 +93,7 @@ def generateTestOutputsHeader(deployer: NetworkDeployer, test_outputs: List[np.n
 
         retStr += f"#define OUTPUTTYPE {typeName}\n"
         retStr += f"#define ISOUTPUTFLOAT {int(typeName == 'float32_t')}\n"
-        retStr += f"{typeName} testOutputVector{index}[] ="
+        retStr += f"{_testVectorQualifier(deployer)}{typeName} testOutputVector{index}[] ="
         retStr += "{"
 
         values = values.flatten()

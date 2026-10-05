@@ -32,7 +32,10 @@ from Deeploy.Targets.SoftHier.Deployer import SoftHierDeployer
 from Deeploy.Targets.SoftHier.Platform import SoftHierOptimizer, SoftHierPlatform
 
 _SIGNPROP_PLATFORMS = ["Apollo3", "Apollo4", "QEMU-ARM", "Generic", "MemPool", "SoftHier"]
-_NONSIGNPROP_PLATFORMS = ["Siracusa", "Siracusa_w_neureka", "PULPOpen", "PULPOpen_iDMA", "Snitch", "Chimera", "GAP9"]
+_NONSIGNPROP_PLATFORMS = [
+    "Siracusa", "Siracusa_w_neureka", "PULPOpen", "PULPOpen_iDMA", "PULPCluster_iDMA", "PULPCluster_iDMA_CV32E40P",
+    "Snitch", "Chimera", "GAP9"
+]
 _PLATFORMS = _SIGNPROP_PLATFORMS + _NONSIGNPROP_PLATFORMS
 
 
@@ -59,7 +62,9 @@ def mapPlatform(platformName: str) -> Tuple[DeploymentPlatform, bool]:
     elif platformName == "Generic":
         Platform = GenericPlatform()
 
-    elif platformName == "PULPOpen_iDMA":
+    elif platformName in ("PULPOpen_iDMA", "PULPCluster_iDMA", "PULPCluster_iDMA_CV32E40P"):
+        # FC and core are build-system concerns, invisible to codegen: only the DMA
+        # backend differs here, so all three share one platform object.
         Platform = PULPPlatform_iDMA()
 
     elif platformName == "Siracusa" or platformName == "PULPOpen":

@@ -16,6 +16,13 @@ set(DEEPLOY_ARCH PULP)
 
 set(num_threads  ${NUM_CORES})
 
+# The testbench boots the FC from the +ENTRY_POINT plusarg. Do not hardcode the
+# nominal 0x1c008080: link.ld pins .vectors with MAX(0x1c008000, ALIGN(256)), so
+# an image that overflows L2 private bank 0 has its entry point silently pushed
+# forward. This wrapper reads the real one out of the ELF and exports it through
+# VSIM_RUNNER_FLAGS, which tcl_files/config/vsim.tcl appends to the vsim command.
+set(RUN_WITH_ENTRY_POINT ${CMAKE_CURRENT_LIST_DIR}/runWithEntryPoint.py)
+
 macro(add_pulp_open_qsim_simulation name)
 
   set(TARGET_NAME ${name})
@@ -44,15 +51,12 @@ macro(add_pulp_open_qsim_simulation name)
     )
   endforeach()
 
-  set(ENTRY_POINT "0x1c008080")
-
   add_custom_target(qsim.gui_${name}
     DEPENDS ${name} ${SIM_DIRS}
     WORKING_DIRECTORY ${TARGET_BUILD_DIR}
 
     COMMAND ${CMAKE_COMMAND} -E env
       VSIM_PATH=${VSIM_PATH}
-      VSIM_RUNNER_FLAGS=+ENTRY_POINT=${ENTRY_POINT}
       $ENV{PULP_SDK_HOME}/bin/stim_utils.py --binary=${TARGETS} --vectors=${TARGET_BUILD_DIR}/vectors/stim.txt
 
     COMMAND $ENV{PULP_SDK_HOME}/bin/plp_mkflash
@@ -65,7 +69,7 @@ macro(add_pulp_open_qsim_simulation name)
       --output=${TARGET_BUILD_DIR}/vectors/hyper_stim.slm
 
     COMMAND ${CMAKE_COMMAND} -E env USE_QONE=1
-      VSIM_RUNNER_FLAGS=+ENTRY_POINT=${ENTRY_POINT}
+      ${RUN_WITH_ENTRY_POINT} ${TARGETS} --
       qsim -do "source ${VSIM_PATH}/tcl_files/config/run_and_exit.tcl"
         -do "source ${VSIM_PATH}/tcl_files/run.tcl; "
 
@@ -81,7 +85,6 @@ macro(add_pulp_open_qsim_simulation name)
 
     COMMAND ${CMAKE_COMMAND} -E env
       VSIM_PATH=${VSIM_PATH}
-      VSIM_RUNNER_FLAGS=+ENTRY_POINT=${ENTRY_POINT}
       $ENV{PULP_SDK_HOME}/bin/stim_utils.py --binary=${TARGETS} --vectors=${TARGET_BUILD_DIR}/vectors/stim.txt
 
     COMMAND $ENV{PULP_SDK_HOME}/bin/plp_mkflash
@@ -94,7 +97,7 @@ macro(add_pulp_open_qsim_simulation name)
       --output=${TARGET_BUILD_DIR}/vectors/hyper_stim.slm
 
     COMMAND ${CMAKE_COMMAND} -E env USE_QONE=1
-      VSIM_RUNNER_FLAGS=+ENTRY_POINT=${ENTRY_POINT}
+      ${RUN_WITH_ENTRY_POINT} ${TARGETS} --
       qsim -c -do "source ${VSIM_PATH}/tcl_files/config/run_and_exit.tcl"
         -do "source ${VSIM_PATH}/tcl_files/run.tcl;"
 
@@ -133,15 +136,12 @@ macro(add_pulp_open_vsim_simulation name)
     )
   endforeach()
 
-  set(ENTRY_POINT "0x1c008080")
-
   add_custom_target(vsim_${name}
     DEPENDS ${name} ${SIM_DIRS}
     WORKING_DIRECTORY ${TARGET_BUILD_DIR}
 
     COMMAND ${CMAKE_COMMAND} -E env
       VSIM_PATH=${VSIM_PATH}
-      VSIM_RUNNER_FLAGS=+ENTRY_POINT=${ENTRY_POINT}
       $ENV{PULP_SDK_HOME}/bin/stim_utils.py --binary=${TARGETS} --vectors=${TARGET_BUILD_DIR}/vectors/stim.txt
 
     COMMAND $ENV{PULP_SDK_HOME}/bin/plp_mkflash
@@ -154,7 +154,7 @@ macro(add_pulp_open_vsim_simulation name)
       --output=${TARGET_BUILD_DIR}/vectors/hyper_stim.slm
 
     COMMAND ${CMAKE_COMMAND} -E env
-      VSIM_RUNNER_FLAGS=+ENTRY_POINT=${ENTRY_POINT}
+      ${RUN_WITH_ENTRY_POINT} ${TARGETS} --
       ${QUESTA} -64 -c
         -gBAUDRATE=115200
         -gLOAD_L2=JTAG
@@ -174,7 +174,6 @@ macro(add_pulp_open_vsim_simulation name)
 
     COMMAND ${CMAKE_COMMAND} -E env
       VSIM_PATH=${VSIM_PATH}
-      VSIM_RUNNER_FLAGS=+ENTRY_POINT=${ENTRY_POINT}
       $ENV{PULP_SDK_HOME}/bin/stim_utils.py --binary=${TARGETS} --vectors=${TARGET_BUILD_DIR}/vectors/stim.txt
 
     COMMAND $ENV{PULP_SDK_HOME}/bin/plp_mkflash
@@ -187,7 +186,7 @@ macro(add_pulp_open_vsim_simulation name)
       --output=${TARGET_BUILD_DIR}/vectors/hyper_stim.slm
 
     COMMAND ${CMAKE_COMMAND} -E env
-      VSIM_RUNNER_FLAGS=+ENTRY_POINT=${ENTRY_POINT}
+      ${RUN_WITH_ENTRY_POINT} ${TARGETS} --
       ${QUESTA} -64
         -gBAUDRATE=115200
         -gLOAD_L2=JTAG
@@ -199,6 +198,66 @@ macro(add_pulp_open_vsim_simulation name)
     USES_TERMINAL
     VERBATIM
   )
+endmacro()
+
+
+# ---------------------------------------------------------------------------
+# Standalone cluster (pulp_cluster) RTL testbench.
+# ---------------------------------------------------------------------------
+
+set(PULP_CLUSTER_HOME $ENV{PULP_CLUSTER_HOME})
+
+# scripts/run_and_exit.tcl and scripts/start.tcl both hardcode ./build/test/test
+# and never read the APP variable they set, so link the ELF to that path and run
+# from the directory above it.
+function(_add_pulp_cluster_sim_target target elf script use_qone batch)
+  if(NOT PULP_CLUSTER_HOME)
+    message(FATAL_ERROR
+      "PULP_CLUSTER_HOME is not set. ${platform} simulates on the pulp_cluster "
+      "testbench;")
+  endif()
+
+  set(_link_dir ${CMAKE_BINARY_DIR}/build/test)
+  set(_env)
+  if(use_qone)
+    set(_env USE_QONE=1)
+  endif()
+  set(_batch_flag)
+  if(batch)
+    set(_batch_flag -c)
+  endif()
+
+  add_custom_target(${target}
+    DEPENDS ${elf}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${_link_dir}
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+      ${CMAKE_BINARY_DIR}/bin/${elf} ${_link_dir}/test
+
+    # VSIM_PATH must be a Tcl variable, not an environment one: the scripts
+    # error out if it is missing, and use it as -lib $VSIM_PATH/work.
+    COMMAND ${CMAKE_COMMAND} -E env ${_env}
+      ${QUESTA} -64 ${_batch_flag}
+        -do "set VSIM_PATH ${PULP_CLUSTER_HOME}; source ${PULP_CLUSTER_HOME}/scripts/${script}"
+
+    COMMENT "Simulating ${elf} on the pulp_cluster testbench"
+    USES_TERMINAL
+    VERBATIM
+  )
+endfunction()
+
+# run_and_exit.tcl ends with `quit -code [examine sim:/pulp_cluster_tb/ret_val]`,
+# so these targets propagate the test's exit status. The cluster Makefile's own
+# `run` target pipes through tee and therefore always reports success.
+macro(add_pulp_cluster_vsim_simulation name)
+  _add_pulp_cluster_sim_target(vsim_${name}     ${name} run_and_exit.tcl OFF ON)
+  _add_pulp_cluster_sim_target(vsim.gui_${name} ${name} start.tcl        OFF OFF)
+endmacro()
+
+macro(add_pulp_cluster_qsim_simulation name)
+  _add_pulp_cluster_sim_target(qsim_${name}     ${name} run_and_exit.tcl ON ON)
+  _add_pulp_cluster_sim_target(qsim.gui_${name} ${name} start.tcl        ON OFF)
 endmacro()
 
 
