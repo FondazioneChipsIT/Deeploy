@@ -4,13 +4,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// OT cluster harness (from PULPOpen_iDMA): no L3, persistent mailbox worker.
+// OT cluster harness (from PULPOpen_iDMA): L3 = memory-mapped HyperRAM, persistent mailbox worker.
 // The OT host rings RCV per run; tot_err goes back via cluster-ctrl, LETTER0 and SND.
 
 #include <math.h>
 
 #include "CycleCounter.h"
 #include "Network.h"
+#include "dory_mem.h"
 #include "pmsis.h"
 #include "testinputs.h"
 #include "testoutputs.h"
@@ -72,7 +73,8 @@ static void send_task(void (*entry)(void *), void *arg) {
   pi_cluster_send_task_to_cl(&cluster_dev, &cluster_task);
 }
 
-// Inputs in, RunNetwork, outputs checked; returns the error count
+// Inputs in, RunNetwork, outputs checked; returns the error count.
+// L3 (HyperRAM) buffers are core-addressable: copied/compared in place.
 static uint32_t run_and_check(void) {
   for (uint32_t buf = 0; buf < DeeployNetwork_num_inputs; buf++) {
     if ((uint32_t)DeeployNetwork_inputs[buf] >= 0x10000000) {
@@ -142,6 +144,9 @@ int main(void) {
   pi_open_from_conf(&cluster_dev, &conf);
   if (pi_cluster_open(&cluster_dev))
     return -1;
+
+  // L3 allocator + L1 staging buffers, before InitNetwork's cl_ram_malloc
+  mem_init();
 
   send_task(InitNetwork, NULL);
 

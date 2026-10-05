@@ -6,15 +6,15 @@
 
 #include "dory_mem.h"
 
-// No flash/ram devices at all (e.g. OT cluster): L3 must not be used
-#ifndef DEEPLOY_NO_L3
-
 #include "bsp/bsp.h"
+#include "bsp/ram.h"
+#include "pmsis.h"
+
+// No flash (e.g. OT cluster): L3 constants are preloaded, no readfs loading
+#ifndef DEEPLOY_NO_FLASH
 #include "bsp/flash.h"
 #include "bsp/fs.h"
 #include "bsp/fs/readfs.h"
-#include "bsp/ram.h"
-#include "pmsis.h"
 
 #ifdef USE_HYPERFLASH
 #include "bsp/flash/hyperflash.h"
@@ -31,16 +31,26 @@ typedef struct pi_mram_conf flash_conf_t;
 typedef struct pi_default_flash_conf flash_conf_t;
 #define flash_conf_init(conf) pi_default_flash_conf_init(conf)
 #endif
+#endif // DEEPLOY_NO_FLASH
 
 #ifdef USE_HYPERRAM
 #include "bsp/ram/hyperram.h"
 typedef struct pi_hyperram_conf ram_conf_t;
 #define ram_conf_init(conf) pi_hyperram_conf_init(conf)
+#elif defined USE_MMRAM
+// Memory-mapped L3 (OT cluster HyperRAM)
+#include "bsp/ram/mmram.h"
+typedef struct pi_mmram_conf ram_conf_t;
+#define ram_conf_init(conf) pi_mmram_conf_init(conf)
 #else
 typedef struct pi_default_ram_conf ram_conf_t;
 #define ram_conf_init(conf) pi_default_ram_conf_init(conf)
 #endif
 
+struct pi_device ram;
+static ram_conf_t ram_conf;
+
+#ifndef DEEPLOY_NO_FLASH
 #define BUFFER_SIZE 2048 // 128
 static uint8_t buffer[BUFFER_SIZE];
 
@@ -49,9 +59,6 @@ static flash_conf_t flash_conf;
 
 static struct pi_device fs;
 static struct pi_readfs_conf fs_conf;
-
-struct pi_device ram;
-static ram_conf_t ram_conf;
 
 void open_fs() {
   // SCHEREMO: Fix FS
@@ -65,13 +72,17 @@ void open_fs() {
   }
 }
 
+#endif // DEEPLOY_NO_FLASH
+
 void mem_init() {
+#ifndef DEEPLOY_NO_FLASH
   flash_conf_init(&flash_conf);
   pi_open_from_conf(&flash, &flash_conf);
   if (pi_flash_open(&flash)) {
     printf("ERROR: Cannot open flash! Exiting...\n");
     pmsis_exit(-1);
   }
+#endif
 
   ram_conf_init(&ram_conf);
   pi_open_from_conf(&ram, &ram_conf);
@@ -127,6 +138,7 @@ void cl_ram_write(void *dest, void *src, const size_t size) {
   pi_cl_ram_write_wait(&req);
 }
 
+#ifndef DEEPLOY_NO_FLASH
 size_t load_file_to_ram(const void *dest, const char *filename) {
   pi_fs_file_t *fd = pi_fs_open(&fs, filename, 0);
   if (fd == NULL) {
@@ -179,4 +191,4 @@ size_t load_file_to_local(const void *dest, const char *filename) {
   return offset;
 }
 
-#endif // DEEPLOY_NO_L3
+#endif // DEEPLOY_NO_FLASH
