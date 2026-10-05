@@ -181,6 +181,12 @@ if __name__ == '__main__':
                         type = int,
                         default = 1024000,
                         help = 'Set L2 size in bytes.\n')
+    parser.add_argument('--l3',
+                        metavar = 'l3',
+                        dest = 'l3',
+                        type = int,
+                        default = 64000000,
+                        help = 'Set L3 size in bytes.\n')
     parser.add_argument('--shouldFail', action = 'store_true')
     parser.add_argument('--memAllocStrategy',
                         metavar = 'memAllocStrategy',
@@ -258,7 +264,7 @@ if __name__ == '__main__':
             test_outputs = [test_outputs[-2]]
 
     # Instantiate Classes Requried for Memory Level Annotation Extension
-    L3 = MemoryLevel(name = "L3", neighbourNames = ["L2"], size = 64000000)
+    L3 = MemoryLevel(name = "L3", neighbourNames = ["L2"], size = args.l3)
     L2 = MemoryLevel(name = "L2", neighbourNames = ["L3", "L1"], size = args.l2)
     L1 = MemoryLevel(name = "L1", neighbourNames = ["L2"], size = args.l1)
     memoryLevels = [L3, L2, L1]

@@ -25,7 +25,8 @@ from Deeploy.Targets.Neureka.Platform import MemoryNeurekaPlatform, MemoryNeurek
     NeurekaPlatform
 from Deeploy.Targets.PULPOpen.Deployer import PULPDeployer
 from Deeploy.Targets.PULPOpen.Platform import MemoryPULPPlatform, MemoryPULPPlatformWrapper, PULPOptimizer, PULPPlatform
-from Deeploy.Targets.PULPOpen_iDMA.Platform import PULPPlatform_iDMA
+from Deeploy.Targets.PULPOpen_iDMA.Deployer import OpenTitanClusterDeployer
+from Deeploy.Targets.PULPOpen_iDMA.Platform import OpenTitanClusterPlatform_iDMA, PULPPlatform_iDMA
 from Deeploy.Targets.Snitch.Deployer import SnitchDeployer
 from Deeploy.Targets.Snitch.Platform import SnitchOptimizer, SnitchPlatform
 from Deeploy.Targets.SoftHier.Deployer import SoftHierDeployer
@@ -34,7 +35,7 @@ from Deeploy.Targets.SoftHier.Platform import SoftHierOptimizer, SoftHierPlatfor
 _SIGNPROP_PLATFORMS = ["Apollo3", "Apollo4", "QEMU-ARM", "Generic", "MemPool", "SoftHier"]
 _NONSIGNPROP_PLATFORMS = [
     "Siracusa", "Siracusa_w_neureka", "PULPOpen", "PULPOpen_iDMA", "PULPCluster_iDMA", "PULPCluster_iDMA_CV32E40P",
-    "Snitch", "Chimera", "GAP9"
+    "OpenTitanCluster_iDMA", "Snitch", "Chimera", "GAP9"
 ]
 _PLATFORMS = _SIGNPROP_PLATFORMS + _NONSIGNPROP_PLATFORMS
 
@@ -63,9 +64,13 @@ def mapPlatform(platformName: str) -> Tuple[DeploymentPlatform, bool]:
         Platform = GenericPlatform()
 
     elif platformName in ("PULPOpen_iDMA", "PULPCluster_iDMA", "PULPCluster_iDMA_CV32E40P"):
-        # FC and core are build-system concerns, invisible to codegen: only the DMA
-        # backend differs here, so all three share one platform object.
+        # FC, core and chip are build-system concerns, invisible to codegen: only the DMA
+        # backend differs here, so all of them share one platform object.
         Platform = PULPPlatform_iDMA()
+
+    elif platformName == "OpenTitanCluster_iDMA":
+        # Same codegen, but L3 constants are preloaded PI_L3 arrays (no flash)
+        Platform = OpenTitanClusterPlatform_iDMA()
 
     elif platformName == "Siracusa" or platformName == "PULPOpen":
         Platform = PULPPlatform()
@@ -232,6 +237,23 @@ def mapDeployer(platform: DeploymentPlatform,
                                 name = name,
                                 default_channels_first = default_channels_first,
                                 deeployStateDir = deeployStateDir)
+
+    elif isinstance(platform, OpenTitanClusterPlatform_iDMA):
+
+        if loweringOptimizer is None:
+            loweringOptimizer = PULPOptimizer
+
+        if default_channels_first is None:
+            default_channels_first = False
+
+        deployer = OpenTitanClusterDeployer(graph,
+                                            platform,
+                                            inputTypes,
+                                            loweringOptimizer,
+                                            scheduler,
+                                            name = name,
+                                            default_channels_first = default_channels_first,
+                                            deeployStateDir = deeployStateDir)
 
     elif isinstance(platform, (PULPPlatform, MemoryPULPPlatform, MemoryPULPPlatformWrapper)):
 

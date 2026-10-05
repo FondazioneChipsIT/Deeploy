@@ -24,6 +24,7 @@ set(PLATFORMS
   MemPool SoftHier QEMU-ARM Generic Snitch Chimera GAP9
   Siracusa Siracusa_w_neureka
   PULPOpen PULPOpen_iDMA PULPCluster_iDMA PULPCluster_iDMA_CV32E40P
+  OpenTitanCluster_iDMA
 )
 set(platform MemPool CACHE STRING "Platform (${PLATFORMS})")
 set_property(CACHE platform PROPERTY STRINGS ${PLATFORMS})

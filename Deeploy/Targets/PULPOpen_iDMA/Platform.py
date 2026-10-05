@@ -4,7 +4,7 @@
 
 import onnx_graphsurgeon as gs
 
-from Deeploy.DeeployTypes import NetworkContext, NodeMapper
+from Deeploy.DeeployTypes import NetworkContext, NodeMapper, NodeTemplate
 from Deeploy.MemoryLevelExtension.MemoryLevels import MemoryHierarchy, MemoryLevel
 from Deeploy.Targets.Generic.Bindings import BasicGEMMBindings, BasicPad1DBindings, BasicPad2DBindings, \
     BasicRQIntegerDivBinding
@@ -146,7 +146,8 @@ PULPMapping = {
 
 # SCHEREMO: stdint is included before pulp_nn_kernels.h because it is supposed to be included in there, but isn't...
 _includeList = [
-    "pmsis.h", "stdint.h", "pulp_nn_kernels.h", "DeeployBasicMath.h", "DeeployPULPMath.h", "bsp/ram.h", "pulp_core.h"
+    "pmsis.h", "stdint.h", "pulp_nn_kernels.h", "DeeployBasicMath.h", "DeeployPULPMath.h", "bsp/ram.h", "pulp_core.h",
+    "pulp_idma_utils.h"
 ]
 
 
@@ -191,3 +192,37 @@ class MemoryPULPPlatform_iDMA(MemoryPULPPlatform):
         if node.op in self.untiledOps:
             return ctxt.lookup(tensorName)._memoryLevel
         return super().getTargetMemoryLevel(node, tensorName, ctxt)
+
+# OpenTitan cluster: L3 is the memory-mapped HyperRAM and the ELF is preloaded over JTAG,
+# so L3 constants are initialised .l3_data arrays instead of readfs files.
+_otL3GlobalInitTemplate = NodeTemplate("""
+% if _memoryLevel == "L1":
+static PI_L1 ${type.referencedType.typeName} ${name}[${size}] = {${values}};\n
+% elif _memoryLevel == "L3":
+static PI_L3 ${type.referencedType.typeName} ${name}[${size}] = {${values}};\n
+% else:
+static PI_L2 ${type.referencedType.typeName} ${name}[${size}] = {${values}};\n
+% endif
+""")
+
+
+class OpenTitanClusterConstantBuffer(PULPConstantBuffer):
+
+    initTemplate = _otL3GlobalInitTemplate
+
+
+# dory_mem.h: cl_ram_* / get_ram_ptr() used by L3 allocation and tiling
+_otIncludeList = _includeList + ["dory_mem.h"]
+
+
+class OpenTitanClusterPlatform_iDMA(PULPPlatform_iDMA):
+
+    def __init__(self,
+                 engines = None,
+                 variableBuffer = PULPVariableBuffer,
+                 constantBuffer = OpenTitanClusterConstantBuffer,
+                 structBuffer = PULPStructBuffer,
+                 transientBuffer = PULPTransientBuffer) -> None:
+        if engines is None:
+            engines = [PULPClusterEngine_iDMA("PULPCluster", includeList = _otIncludeList)]
+        super().__init__(engines, variableBuffer, constantBuffer, structBuffer, transientBuffer)

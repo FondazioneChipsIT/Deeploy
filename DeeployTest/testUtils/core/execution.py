@@ -10,7 +10,7 @@ from pathlib import Path
 
 from Deeploy.Logging import DEFAULT_LOGGER as log
 
-from .config import PULP_SDK_PLATFORMS, DeeployTestConfig
+from .config import BUILD_ONLY_PLATFORMS, PULP_SDK_PLATFORMS, DeeployTestConfig
 from .output_parser import TestResult, parse_test_output
 
 
@@ -103,7 +103,7 @@ def configure_cmake(config: DeeployTestConfig) -> None:
         cmd.append("-Dgvsoc_simulation=OFF")
 
     if config.platform in PULP_SDK_PLATFORMS:
-        if config.simulator in ('vsim', 'vsim.gui', 'qsim', 'qsim.gui'):
+        if config.simulator in ('vsim', 'vsim.gui', 'qsim', 'qsim.gui') or config.platform in BUILD_ONLY_PLATFORMS:
             cmd.append("-DSDK_PLATFORM=RTL")
         elif config.simulator == 'gvsoc':
             cmd.append("-DSDK_PLATFORM=GVSOC")
@@ -169,7 +169,7 @@ def run_simulation(config: DeeployTestConfig, skip: bool = False) -> TestResult:
     Raises:
         RuntimeError: If simulation cannot be executed
     """
-    if skip:
+    if skip or config.platform in BUILD_ONLY_PLATFORMS:
         log.info(f"Skipping simulation for {config.test_name}")
         return TestResult(success = True, error_count = 0, total_count = 0, stdout = "Skipped")
 

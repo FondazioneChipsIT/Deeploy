@@ -147,6 +147,12 @@ class DeeployRunnerArgumentParser(argparse.ArgumentParser):
                               type = int,
                               default = 1024000,
                               help = 'L2 size in bytes\n')
+            self.add_argument('--l3',
+                              metavar = '<size>',
+                              dest = 'l3',
+                              type = int,
+                              default = 64000000,
+                              help = 'L3 size in bytes\n')
             self.add_argument('--randomizedMemoryScheduler',
                               action = "store_true",
                               help = 'Enable randomized memory scheduler\n')
@@ -229,6 +235,8 @@ def create_config_from_args(args: argparse.Namespace,
             gen_args_list.append(f"--l1={args.l1}")
         if hasattr(args, 'l2') and args.l2 and args.l2 != 1024000:
             gen_args_list.append(f"--l2={args.l2}")
+        if hasattr(args, 'l3') and args.l3 and args.l3 != 64000000:
+            gen_args_list.append(f"--l3={args.l3}")
         if hasattr(args, 'randomizedMemoryScheduler') and args.randomizedMemoryScheduler:
             gen_args_list.append("--randomizedMemoryScheduler")
         if hasattr(args, 'profileTiling') and args.profileTiling:
@@ -363,6 +371,7 @@ def main(default_platform: Optional[str] = None,
         "pulpopen_idma": "PULPOpen_iDMA",
         "pulpcluster_idma": "PULPCluster_iDMA",
         "pulpcluster_idma_cv32e40p": "PULPCluster_iDMA_CV32E40P",
+        "opentitancluster_idma": "OpenTitanCluster_iDMA",
     }
 
     if args.platform:
@@ -407,6 +416,7 @@ def main(default_platform: Optional[str] = None,
             "PULPOpen_iDMA": "qsim",
             "PULPCluster_iDMA": "qsim",
             "PULPCluster_iDMA_CV32E40P": "qsim",
+            "OpenTitanCluster_iDMA": "none",
         }
         simulator = simulator_map.get(platform, "host")
         log.info(f"No simulator specified, using default for {platform}: {simulator}")

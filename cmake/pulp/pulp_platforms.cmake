@@ -9,16 +9,18 @@
 # Mchan, so _iDMA is the deviation); PULPCluster is the headless standalone cluster
 # (canonical core RI5CY, so _CV32E40P is the deviation).
 #
-# | platform                   | chip     | FC | DMA   | core     | toolchains |
-# |----------------------------|----------|----|-------|----------|------------|
-# | Siracusa                   | siracusa | y  | Mchan | RI5CY    | LLVM, GCC  |
-# | Siracusa_w_neureka         | siracusa | y  | Mchan | RI5CY    | LLVM, GCC  |
-# | PULPOpen                   | pulp     | y  | Mchan | RI5CY    | LLVM, GCC  |
-# | PULPOpen_iDMA              | pulp     | y  | iDMA  | RI5CY    | LLVM, GCC  |
-# | PULPCluster_iDMA           | pulp     | n  | iDMA  | RI5CY    | LLVM, GCC  |
-# | PULPCluster_iDMA_CV32E40P  | pulp     | n  | iDMA  | CV32E40P | GCC        |
+# | platform                   | chip              | FC | DMA   | core     | toolchains |
+# |----------------------------|-------------------|----|-------|----------|------------|
+# | Siracusa                   | siracusa          | y  | Mchan | RI5CY    | LLVM, GCC  |
+# | Siracusa_w_neureka         | siracusa          | y  | Mchan | RI5CY    | LLVM, GCC  |
+# | PULPOpen                   | pulp              | y  | Mchan | RI5CY    | LLVM, GCC  |
+# | PULPOpen_iDMA              | pulp              | y  | iDMA  | RI5CY    | LLVM, GCC  |
+# | PULPCluster_iDMA           | pulp              | n  | iDMA  | RI5CY    | LLVM, GCC  |
+# | PULPCluster_iDMA_CV32E40P  | pulp              | n  | iDMA  | CV32E40P | GCC        |
+# | OpenTitanCluster_iDMA      | opentitan_cluster | n  | iDMA  | RI5CY    | GCC        |
 #
 # PULPCluster == the SDK's configs/pulp_cluster.sh (CONFIG_NO_FC=1).
+# OpenTitanCluster == configs/opentitan_cluster.sh: same cluster in the OT secure domain (build only).
 #
 # DMA has no variable here: it is the one axis that changes the generated
 # Network.c, so platformMapping.py owns it.
@@ -60,6 +62,11 @@ elseif(platform STREQUAL PULPCluster_iDMA_CV32E40P)
   set(PULP_HAS_FC OFF)
   set(PULP_CORE cv32e40p)
   set(PULP_HARNESS_DIR PULPOpen_iDMA)
+elseif(platform STREQUAL OpenTitanCluster_iDMA)
+  set(PULP_CHIP opentitan_cluster)
+  set(PULP_HAS_FC OFF)
+  set(PULP_CORE ri5cy)
+  set(PULP_HARNESS_DIR OpenTitanCluster)
 else()
   set(PULP_IS_PULP_PLATFORM FALSE)
 endif()
