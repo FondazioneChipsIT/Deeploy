@@ -53,6 +53,7 @@ deeploy:
 deeploy_chipsit:
 	DOCKER_BUILDKIT=1 docker build \
 	--ssh default \
+	--build-context external_tools=/tools \
 	-f Dockerfile.chipsit_CI_deeploy \
 	--build-arg BASE_IMAGE=$(TOOLCHAIN_IMAGE) \
 	-t $(DEEPLOY_IMAGE) ..
