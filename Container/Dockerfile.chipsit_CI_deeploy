@@ -37,12 +37,6 @@ RUN --mount=type=cache,target=/ccache \
     rm -rf toolchain/pulp-sdk toolchain/qemu toolchain/mempool toolchain/banshee toolchain/xtensor toolchain/xtl toolchain/xsimd toolchain/gvsoc && \
     ccache -s
 
-# Install SoftHier emulator and toolchain
-RUN --mount=type=cache,target=/ccache \
-    ccache -z && \
-    make SOFTHIER_INSTALL_DIR=/app/install/softhier softhier && \
-    ccache -s
-
 # Install Bender
 RUN mkdir -p /app/install/bender && \
 if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
