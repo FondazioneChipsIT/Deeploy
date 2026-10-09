@@ -26,6 +26,7 @@ WORKDIR /app/build
 COPY toolchain/*.patch toolchain/
 COPY Makefile ./
 
+COPY /usr/bin ./
 # Compile emulators
 # WIESEP: We need to already clean up some space, otherwise the GitHub runners run out of disk space
 RUN --mount=type=cache,target=/ccache \
@@ -38,14 +39,7 @@ RUN --mount=type=cache,target=/ccache \
     ccache -s
 
 # Install Bender
-RUN mkdir -p /app/install/bender && \
-if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
-    wget https://github.com/pulp-platform/bender/releases/download/v${BENDER_VERSION}/bender-${BENDER_VERSION}-x86_64-linux-gnu-ubuntu${UBUNTU_VERSION}.tar.gz && \
-    tar xzf bender-${BENDER_VERSION}-x86_64-linux-gnu-ubuntu${UBUNTU_VERSION}.tar.gz -C /app/install/bender; \
-elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-    wget https://github.com/pulp-platform/bender/releases/download/v${BENDER_VERSION}/bender-${BENDER_VERSION}-arm64-linux-gnu-ubuntu${UBUNTU_VERSION}.tar.gz && \
-    tar xzf bender-${BENDER_VERSION}-arm64-linux-gnu-ubuntu${UBUNTU_VERSION}.tar.gz -C /app/install/bender; \
-fi
+module load bender/${BENDER_VERSION}
 
 # Remove toolchain to make the container lighter
 WORKDIR /app
