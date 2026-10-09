@@ -1,0 +1,132 @@
+# SPDX-FileCopyrightText: 2025 ETH Zurich and University of Bologna
+#
+# SPDX-License-Identifier: Apache-2.0
+
+########## Stage 1: Large image to build toolchains and emulator ##########
+ARG BASE_IMAGE=ghcr.io/pulp-platform/deeploy-toolchain
+FROM ${BASE_IMAGE} AS toolchain
+
+# Intermediate Stage
+ARG DEBIAN_FRONTEND=noninteractive
+ARG BENDER_VERSION=0.32.1
+ARG UBUNTU_VERSION=22.04
+ARG TARGETPLATFORM
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV PATH="/app/install/bender:${PATH}"
+ENV DEEPLOY_INSTALL_DIR=/app/install
+ENV LLVM_INSTALL_DIR=/app/install/llvm
+
+WORKDIR /app/build
+
+# Make sure updates in the repo are reflected in the image
+COPY toolchain/*.patch toolchain/
+COPY Makefile ./
+
+# Compile emulators
+# WIESEP: We need to already clean up some space, otherwise the GitHub runners run out of disk space
+RUN --mount=type=cache,target=/ccache \
+    ccache -z && \
+    make pulp-sdk xtensor && \
+    make gvsoc && \
+    cp -r toolchain/gvsoc/core/requirements.txt /app/core-requirements.txt && \
+    cp -r toolchain/gvsoc/gapy/requirements.txt /app/gapy-requirements.txt && \
+    rm -rf toolchain/pulp-sdk toolchain/qemu toolchain/mempool toolchain/banshee toolchain/xtensor toolchain/xtl toolchain/xsimd toolchain/gvsoc && \
+    ccache -s
+
+# Install SoftHier emulator and toolchain
+RUN --mount=type=cache,target=/ccache \
+    ccache -z && \
+    make SOFTHIER_INSTALL_DIR=/app/install/softhier softhier && \
+    ccache -s
+
+# Install Bender
+RUN mkdir -p /app/install/bender && \
+if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+    wget https://github.com/pulp-platform/bender/releases/download/v${BENDER_VERSION}/bender-${BENDER_VERSION}-x86_64-linux-gnu-ubuntu${UBUNTU_VERSION}.tar.gz && \
+    tar xzf bender-${BENDER_VERSION}-x86_64-linux-gnu-ubuntu${UBUNTU_VERSION}.tar.gz -C /app/install/bender; \
+elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+    wget https://github.com/pulp-platform/bender/releases/download/v${BENDER_VERSION}/bender-${BENDER_VERSION}-arm64-linux-gnu-ubuntu${UBUNTU_VERSION}.tar.gz && \
+    tar xzf bender-${BENDER_VERSION}-arm64-linux-gnu-ubuntu${UBUNTU_VERSION}.tar.gz -C /app/install/bender; \
+fi
+
+# Remove toolchain to make the container lighter
+WORKDIR /app
+RUN rm -rf /app/build
+
+########## Stage 2: Lightweight image with precompiled toolchain and emulators ##########
+FROM ubuntu:22.04 AS deeploy
+
+ARG TARGETPLATFORM
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+
+# Export symbols necessary for Deeploy's build flow
+ENV CMAKE=/usr/bin/cmake
+ENV DEEPLOY_INSTALL_DIR=/app/install
+ENV PULP_SDK_HOME=/app/install/pulp-sdk
+ENV LLVM_INSTALL_DIR=/app/install/llvm
+ENV GVSOC_INSTALL_DIR=/app/install/gvsoc
+ENV SOFTHIER_INSTALL_DIR=/app/install/softhier
+ENV MINIMALLOC_INSTALL_DIR=/app/install/minimalloc
+ENV MEMPOOL_HOME=/app/install/mempool
+ENV BENDER_INSTALL_DIR=/app/install/bender
+ENV PATH=/app/install/qemu/bin:/app/install/banshee:/app/install/bender:$PATH
+
+WORKDIR /app/build
+
+COPY pyproject.toml ./
+
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y git-lfs \
+    wget \
+    ccache \
+    make \
+    curl \
+    libpixman-1-dev \
+    libsdl2-dev \
+    python-is-python3 \
+    python3.10-venv \
+    python3.10-distutils \
+    gcc \
+    zsh && \
+    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python get-pip.py && \
+    rm get-pip.py && \
+    pip install toml-to-requirements && \
+    toml-to-req --toml-file pyproject.toml && \
+    pip install -r requirements.txt
+
+# Install CMake
+RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+    wget https://github.com/Kitware/CMake/releases/download/v3.24.0/cmake-3.24.0-linux-x86_64.sh && \
+    chmod +x cmake-3.24.0-linux-x86_64.sh && \
+    ./cmake-3.24.0-linux-x86_64.sh --prefix=/usr --skip-license; \
+elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+    wget https://github.com/Kitware/CMake/releases/download/v3.24.0/cmake-3.24.0-linux-aarch64.sh && \
+    chmod +x ./cmake-3.24.0-linux-aarch64.sh && \
+    ./cmake-3.24.0-linux-aarch64.sh --prefix=/usr --skip-license; \
+fi
+
+COPY Container/.zshrc ./
+# # Install Oh My ZSH
+RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended && \
+    cp .zshrc /root/.zshrc
+
+COPY --from=toolchain /app/core-requirements.txt ./core-requirements.txt
+COPY --from=toolchain /app/gapy-requirements.txt ./gapy-requirements.txt
+COPY requirements-dev.txt ./
+RUN pip install -r requirements-dev.txt -r core-requirements.txt -r gapy-requirements.txt
+
+# Copy pre-built toolchains and emulators
+COPY --from=toolchain /app/install /app/install
+
+# Remove unused files and clean up to reduce image size
+WORKDIR /app
+RUN rm -rf /app/build
