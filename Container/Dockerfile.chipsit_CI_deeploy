@@ -9,6 +9,7 @@ FROM ${BASE_IMAGE} AS toolchain
 # Intermediate Stage
 ARG DEBIAN_FRONTEND=noninteractive
 ARG BENDER_VERSION=0.32.1
+ARG RISCV_GCC_VERSION=1.0.16
 ARG UBUNTU_VERSION=22.04
 ARG TARGETPLATFORM
 
@@ -40,8 +41,11 @@ RUN --mount=type=cache,target=/ccache \
 
 # Install Bender
 COPY --from=external_tools /utils/bender_${BENDER_VERSION}/bender /app/install/bender
-
+# Install riscv toolchain
+COPY --from=external_tools /opt/riscv/pulp-gcc-${RISCV_GCC_VERSION}/ /app/install/riscv_gcc_toolchain
+# Add to PATH 
 ENV PATH=/app/install/bender:${PATH}
+ENV PATH=/app/install/riscv_gcc_toolchain:${PATH}
 
 # Remove toolchain to make the container lighter
 WORKDIR /app
@@ -74,7 +78,7 @@ COPY pyproject.toml ./
 
 # Install dependencies
 RUN apt-get update && \
-    apt-get install -y git-lfs \
+    apt-get install -y git-lfs build-essential \
     wget \
     ccache \
     make \
