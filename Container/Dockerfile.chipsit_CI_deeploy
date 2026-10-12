@@ -82,24 +82,30 @@ COPY pyproject.toml ./
 
 # Install dependencies
 RUN apt-get update && \
-    apt-get install -y git-lfs build-essential environment-modules \
+    apt-get install -y \
+    git-lfs \
+    build-essential \
+    environment-modules \
+    libxft2 \
     wget \
     ccache \
     make \
     curl \
     libpixman-1-dev \
     libsdl2-dev \
-    python-is-python3 \
-    python3.10-venv \
-    python3.10-distutils \
-    gcc \
+    python3.12 \
+    python3.12-venv \
+    python3.12-dev \
     zsh && \
-    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
-    python get-pip.py && \
+    curl -sS https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python3.12 get-pip.py && \
     rm get-pip.py && \
-    pip install toml-to-requirements && \
+    ln -sf /usr/bin/python3.12 /usr/local/bin/python && \
+    python -m pip install --upgrade pip && \
+    python -m pip install toml-to-requirements && \
     toml-to-req --toml-file pyproject.toml && \
-    pip install -r requirements.txt
+    python -m pip install -r requirements.txt && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install CMake
 RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
