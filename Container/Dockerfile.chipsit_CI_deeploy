@@ -38,13 +38,16 @@ RUN --mount=type=cache,target=/ccache \
     rm -rf toolchain/pulp-sdk toolchain/qemu toolchain/mempool toolchain/banshee toolchain/xtensor toolchain/xtl toolchain/xsimd toolchain/gvsoc && \
     ccache -s
 
-# Install Bender
-COPY --from=external_tools /utils/bender_${BENDER_VERSION}/bender /app/install/bender
+# # Install Bender
+# COPY --from=external_tools /utils/bender_${BENDER_VERSION}/bender /app/install/bender
+
+# Copy the pulp root folder
 COPY --from=pulp_root /pulp /app/install/pulp
+
 # Install riscv toolchain
 COPY --from=external_tools /opt/riscv/pulp-gcc-${RISCV_GCC_VERSION}/ /app/install/riscv_gcc_toolchain
 # Add to PATH 
-ENV PATH=/app/install/bender:${PATH}
+# ENV PATH=/app/install/bender:${PATH}
 ENV PATH=/app/install/riscv_gcc_toolchain:${PATH}
 
 # Remove toolchain to make the container lighter
@@ -69,8 +72,9 @@ ENV GVSOC_INSTALL_DIR=/app/install/gvsoc
 ENV SOFTHIER_INSTALL_DIR=/app/install/softhier
 ENV MINIMALLOC_INSTALL_DIR=/app/install/minimalloc
 ENV MEMPOOL_HOME=/app/install/mempool
-ENV BENDER_INSTALL_DIR=/app/install/bender
-ENV PATH=/app/install/qemu/bin:/app/install/banshee:/app/install/bender:$PATH
+# ENV BENDER_INSTALL_DIR=/app/install/bender
+# ENV PATH=/app/install/qemu/bin:/app/install/banshee:/app/install/bender:$PATH
+ENV PATH=/app/install/qemu/bin:/app/install/banshee:$PATH
 
 WORKDIR /app/build
 
@@ -78,7 +82,7 @@ COPY pyproject.toml ./
 
 # Install dependencies
 RUN apt-get update && \
-    apt-get install -y git-lfs build-essential \
+    apt-get install -y git-lfs build-essential environment-modules \
     wget \
     ccache \
     make \
@@ -96,6 +100,13 @@ RUN apt-get update && \
     pip install toml-to-requirements && \
     toml-to-req --toml-file pyproject.toml && \
     pip install -r requirements.txt
+
+# Load Bender module
+RUN --mount=type=bind,from=external_tools,source=.,target=/tools \
+    bash -lc 'source /usr/share/modules/init/bash && \
+    export MODULEPATH=/tools/utils/.modulefiles:/opt/riscv/.modulefiles:/tools/amd/.modulefiles:/tools/cadence/.modulefiles:/tools/siemens/.modulefiles:/tools/synopsys/.modulefiles:/tools/verilator/.modulefiles:${MODULEPATH} && \
+    module avail bender && \
+    module load bender/0.32.1'
 
 # Install CMake
 RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
