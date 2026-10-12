@@ -101,13 +101,6 @@ RUN apt-get update && \
     toml-to-req --toml-file pyproject.toml && \
     pip install -r requirements.txt
 
-# Load Bender module
-RUN --mount=type=bind,from=external_tools,source=.,target=/tools \
-    bash -lc 'source /usr/share/modules/init/bash && \
-    export MODULEPATH=/tools/utils/.modulefiles:/opt/riscv/.modulefiles:/tools/amd/.modulefiles:/tools/cadence/.modulefiles:/tools/siemens/.modulefiles:/tools/synopsys/.modulefiles:/tools/verilator/.modulefiles:${MODULEPATH} && \
-    module avail bender && \
-    module load bender/0.32.1'
-
 # Install CMake
 RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
     wget https://github.com/Kitware/CMake/releases/download/v3.24.0/cmake-3.24.0-linux-x86_64.sh && \
