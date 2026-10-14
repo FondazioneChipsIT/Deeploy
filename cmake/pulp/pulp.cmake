@@ -95,7 +95,7 @@ macro(add_pulp_open_qsim_simulation name)
 
     COMMAND ${CMAKE_COMMAND} -E env USE_QONE=1
       VSIM_RUNNER_FLAGS=+ENTRY_POINT=${ENTRY_POINT}
-      qsim -c -do "source ${VSIM_PATH}/tcl_files/config/run_and_exit.tcl"
+      qsim -batch -do "source ${VSIM_PATH}/tcl_files/config/run_and_exit.tcl"
         -do "source ${VSIM_PATH}/tcl_files/run.tcl;"
 
     COMMENT "Simulating ${name} with qsim"
@@ -155,7 +155,7 @@ macro(add_pulp_open_vsim_simulation name)
 
     COMMAND ${CMAKE_COMMAND} -E env
       VSIM_RUNNER_FLAGS=+ENTRY_POINT=${ENTRY_POINT}
-      ${QUESTA} -64 -c
+      ${QUESTA} -64 -batch
         -gBAUDRATE=115200
         -gLOAD_L2=JTAG
         -permit_unmatched_virtual_intf
