@@ -154,11 +154,8 @@ macro(add_pulp_open_vsim_simulation name)
       --output=${TARGET_BUILD_DIR}/vectors/hyper_stim.slm
 
     COMMAND ${CMAKE_COMMAND} -E env
-      VSIM_RUNNER_FLAGS=+ENTRY_POINT=${ENTRY_POINT}
+      "VSIM_RUNNER_FLAGS=+ENTRY_POINT=${ENTRY_POINT} -permit_unmatched_virtual_intf -gBAUDRATE=115200 -gLOAD_L2=JTAG"
       ${QUESTA} -64 -batch
-        -gBAUDRATE=115200
-        -gLOAD_L2=JTAG
-        -permit_unmatched_virtual_intf
         -do "source ${VSIM_PATH}/tcl_files/config/run_and_exit.tcl"
         -do "source ${VSIM_PATH}/tcl_files/run.tcl;"
 
