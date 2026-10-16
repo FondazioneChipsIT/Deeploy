@@ -24,12 +24,37 @@ from test_mempool_config import DEFAULT_NUM_THREADS as MEMPOOL_DEFAULT_NUM_THREA
 from test_mempool_config import KERNEL_TESTS as MEMPOOL_KERNEL_TESTS
 from test_mempool_config import MODEL_TESTS as MEMPOOL_MODEL_TESTS
 from test_pulpopen_config import DEFAULT_CORES as PULPOPEN_DEFAULT_CORES
+
+from test_pulpopen_config import KERNEL_TESTS_RTL as PULPOPEN_KERNEL_TESTS_RTL
+from test_pulpopen_config import MODEL_TESTS_RTL as PULPOPEN_MODEL_TESTS_RTL
 from test_pulpopen_config import KERNEL_TESTS as PULPOPEN_KERNEL_TESTS
 from test_pulpopen_config import MODEL_TESTS as PULPOPEN_MODEL_TESTS
+
+from test_pulpopen_idma_config import KERNEL_TESTS_RTL as PULPOPEN_IDMA_KERNEL_TESTS_RTL
+from test_pulpopen_idma_config import MODEL_TESTS_RTL as PULPOPEN_IDMA_MODEL_TESTS_RTL
+from test_pulpopen_idma_config import KERNEL_TESTS as PULPOPEN_IDMA_KERNEL_TESTS
+from test_pulpopen_idma_config import MODEL_TESTS as PULPOPEN_IDMA_MODEL_TESTS
+
+from test_pulpopen_tiled_config import L2_DOUBLEBUFFER_KERNELS_RTL as PULPOPEN_L2_DOUBLEBUFFER_KERNELS_RTL
+from test_pulpopen_tiled_config import L2_DOUBLEBUFFER_MODELS_RTL as PULPOPEN_L2_DOUBLEBUFFER_MODELS_RTL
+from test_pulpopen_tiled_config import L2_SINGLEBUFFER_KERNELS_RTL as PULPOPEN_L2_SINGLEBUFFER_KERNELS_RTL
+from test_pulpopen_tiled_config import L2_SINGLEBUFFER_MODELS_RTL as PULPOPEN_L2_SINGLEBUFFER_MODELS_RTL
+
 from test_pulpopen_tiled_config import L2_DOUBLEBUFFER_KERNELS as PULPOPEN_L2_DOUBLEBUFFER_KERNELS
 from test_pulpopen_tiled_config import L2_DOUBLEBUFFER_MODELS as PULPOPEN_L2_DOUBLEBUFFER_MODELS
 from test_pulpopen_tiled_config import L2_SINGLEBUFFER_KERNELS as PULPOPEN_L2_SINGLEBUFFER_KERNELS
 from test_pulpopen_tiled_config import L2_SINGLEBUFFER_MODELS as PULPOPEN_L2_SINGLEBUFFER_MODELS
+
+from test_pulpopen_idma_tiled_config import L2_DOUBLEBUFFER_KERNELS_RTL as PULPOPEN_IDMA_L2_DOUBLEBUFFER_KERNELS_RTL
+from test_pulpopen_idma_tiled_config import L2_DOUBLEBUFFER_MODELS_RTL as PULPOPEN_IDMA_L2_DOUBLEBUFFER_MODELS_RTL
+from test_pulpopen_idma_tiled_config import L2_SINGLEBUFFER_KERNELS_RTL as PULPOPEN_IDMA_L2_SINGLEBUFFER_KERNELS_RTL
+from test_pulpopen_idma_tiled_config import L2_SINGLEBUFFER_MODELS_RTL as PULPOPEN_IDMA_L2_SINGLEBUFFER_MODELS_RTL
+
+from test_pulpopen_idma_tiled_config import L2_DOUBLEBUFFER_KERNELS as PULPOPEN_IDMA_L2_DOUBLEBUFFER_KERNELS
+from test_pulpopen_idma_tiled_config import L2_DOUBLEBUFFER_MODELS as PULPOPEN_IDMA_L2_DOUBLEBUFFER_MODELS
+from test_pulpopen_idma_tiled_config import L2_SINGLEBUFFER_KERNELS as PULPOPEN_IDMA_L2_SINGLEBUFFER_KERNELS
+from test_pulpopen_idma_tiled_config import L2_SINGLEBUFFER_MODELS as PULPOPEN_IDMA_L2_SINGLEBUFFER_MODELS
+
 from test_siracusa_config import DEFAULT_CORES as SIRACUSA_DEFAULT_CORES
 from test_siracusa_config import KERNEL_TESTS as SIRACUSA_KERNEL_TESTS
 from test_siracusa_config import MODEL_TESTS as SIRACUSA_MODEL_TESTS
@@ -124,6 +149,34 @@ PLATFORM_CONFIGS = {
         "model_tests": GAP9_MODEL_TESTS,
         "default_num_cores": GAP9_DEFAULT_NUM_CORES,
     },
+    "PULPOpen_rtl": {
+        "platform": "PULPOpen",
+        "simulator": "vsim",
+        "kernel_tests": PULPOPEN_KERNEL_TESTS_RTL,
+        "model_tests": PULPOPEN_MODEL_TESTS_RTL,
+        "default_num_cores": PULPOPEN_DEFAULT_CORES,
+    },
+    "PULPOpen_iDMA_rtl": {
+        "platform": "PULPOpen_iDMA",
+        "simulator": "vsim",
+        "kernel_tests": PULPOPEN_IDMA_KERNEL_TESTS_RTL,
+        "model_tests": PULPOPEN_IDMA_MODEL_TESTS_RTL,
+        "default_num_cores": PULPOPEN_DEFAULT_CORES,
+    },
+    "PULPOpen": {
+        "platform": "PULPOpen",
+        "simulator": "gvsoc",
+        "kernel_tests": PULPOPEN_KERNEL_TESTS,
+        "model_tests": PULPOPEN_MODEL_TESTS,
+        "default_num_cores": PULPOPEN_DEFAULT_CORES,
+    },
+    "PULPOpen_iDMA": {
+        "platform": "PULPOpen_iDMA",
+        "simulator": "gvsoc",
+        "kernel_tests": PULPOPEN_IDMA_KERNEL_TESTS,
+        "model_tests": PULPOPEN_IDMA_MODEL_TESTS,
+        "default_num_cores": PULPOPEN_DEFAULT_CORES,
+    }
 }
 
 ### Markers summary ###
@@ -996,15 +1049,16 @@ def test_gap9_tiled_models_l3_doublebuffer(test_params, deeploy_test_dir, toolch
     run_and_assert_test(test_name, config, skipgen, skipsim)
 
 
-@pytest.mark.pulpopen
+@pytest.mark.pulpopen_rtl
 @pytest.mark.kernels
-@pytest.mark.parametrize("test_name", PULPOPEN_KERNEL_TESTS, ids = PULPOPEN_KERNEL_TESTS)
-def test_pulpopen_kernels(test_name, deeploy_test_dir, toolchain, toolchain_dir, cmake_args, skipgen, skipsim,
+@pytest.mark.parametrize("test_name", PULPOPEN_KERNEL_TESTS_RTL, ids = PULPOPEN_KERNEL_TESTS_RTL)
+def test_pulpopen_kernels_rtl(test_name, deeploy_test_dir, toolchain, toolchain_dir, cmake_args, skipgen, skipsim,
                           profile_untiled) -> None:
+    platform_config = PLATFORM_CONFIGS["PULPOpen_rtl"]
     config = create_test_config(
         test_name = test_name,
-        platform = "PULPOpen",
-        simulator = "gvsoc",
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1015,16 +1069,61 @@ def test_pulpopen_kernels(test_name, deeploy_test_dir, toolchain, toolchain_dir,
     )
     run_and_assert_test(test_name, config, skipgen, skipsim)
 
+@pytest.mark.pulpopen
+@pytest.mark.kernels
+@pytest.mark.parametrize("test_name", PULPOPEN_KERNEL_TESTS, ids = PULPOPEN_KERNEL_TESTS)
+def test_pulpopen_kernels(test_name, deeploy_test_dir, toolchain, toolchain_dir, cmake_args, skipgen, skipsim,
+                          profile_untiled) -> None:
+    platform_config = PLATFORM_CONFIGS["PULPOpen"]
+    config = create_test_config(
+        test_name = test_name,
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
+        deeploy_test_dir = deeploy_test_dir,
+        toolchain = toolchain,
+        toolchain_dir = toolchain_dir,
+        cmake_args = cmake_args,
+        tiling = False,
+        cores = PULPOPEN_DEFAULT_CORES,
+        profile_untiled = profile_untiled,
+    )
+    run_and_assert_test(test_name, config, skipgen, skipsim)
+
+
+@pytest.mark.pulpopen_rtl
+@pytest.mark.models
+@pytest.mark.parametrize("test_name", PULPOPEN_MODEL_TESTS_RTL, ids = PULPOPEN_MODEL_TESTS_RTL)
+def test_pulpopen_models_rtl(test_name, deeploy_test_dir, toolchain, toolchain_dir, cmake_args, skipgen, skipsim,
+                         profile_untiled) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen_rtl"]
+
+    config = create_test_config(
+        test_name = test_name,
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
+        deeploy_test_dir = deeploy_test_dir,
+        toolchain = toolchain,
+        toolchain_dir = toolchain_dir,
+        cmake_args = cmake_args,
+        tiling = False,
+        cores = PULPOPEN_DEFAULT_CORES,
+        profile_untiled = profile_untiled,
+    )
+    run_and_assert_test(test_name, config, skipgen, skipsim)
 
 @pytest.mark.pulpopen
 @pytest.mark.models
 @pytest.mark.parametrize("test_name", PULPOPEN_MODEL_TESTS, ids = PULPOPEN_MODEL_TESTS)
 def test_pulpopen_models(test_name, deeploy_test_dir, toolchain, toolchain_dir, cmake_args, skipgen, skipsim,
                          profile_untiled) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen"]
+
     config = create_test_config(
         test_name = test_name,
-        platform = "PULPOpen",
-        simulator = "gvsoc",
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1035,6 +1134,37 @@ def test_pulpopen_models(test_name, deeploy_test_dir, toolchain, toolchain_dir, 
     )
     run_and_assert_test(test_name, config, skipgen, skipsim)
 
+
+@pytest.mark.pulpopen_tiled_rtl
+@pytest.mark.kernels
+@pytest.mark.singlebuffer
+@pytest.mark.l2
+@pytest.mark.parametrize(
+    "test_params",
+    generate_test_params(PULPOPEN_L2_SINGLEBUFFER_KERNELS_RTL, "L2-singlebuffer"),
+    ids = param_id,
+)
+def test_pulpopen_tiled_kernels_l2_singlebuffer_rtl(test_params, deeploy_test_dir, toolchain, toolchain_dir, cmake_args,
+                                                skipgen, skipsim) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen_rtl"]
+
+    test_name, l1, config_name = test_params
+    config = create_test_config(
+        test_name = test_name,
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
+        deeploy_test_dir = deeploy_test_dir,
+        toolchain = toolchain,
+        toolchain_dir = toolchain_dir,
+        cmake_args = cmake_args,
+        tiling = True,
+        cores = PULPOPEN_DEFAULT_CORES,
+        l1 = l1,
+        default_mem_level = "L2",
+        double_buffer = False,
+    )
+    run_and_assert_test(test_name, config, skipgen, skipsim)
 
 @pytest.mark.pulpopen_tiled
 @pytest.mark.kernels
@@ -1047,11 +1177,14 @@ def test_pulpopen_models(test_name, deeploy_test_dir, toolchain, toolchain_dir, 
 )
 def test_pulpopen_tiled_kernels_l2_singlebuffer(test_params, deeploy_test_dir, toolchain, toolchain_dir, cmake_args,
                                                 skipgen, skipsim) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen"]
+
     test_name, l1, config_name = test_params
     config = create_test_config(
         test_name = test_name,
-        platform = "PULPOpen",
-        simulator = "gvsoc",
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1064,6 +1197,37 @@ def test_pulpopen_tiled_kernels_l2_singlebuffer(test_params, deeploy_test_dir, t
     )
     run_and_assert_test(test_name, config, skipgen, skipsim)
 
+
+@pytest.mark.pulpopen_tiled_rtl
+@pytest.mark.kernels
+@pytest.mark.doublebuffer
+@pytest.mark.l2
+@pytest.mark.parametrize(
+    "test_params",
+    generate_test_params(PULPOPEN_L2_DOUBLEBUFFER_KERNELS_RTL, "L2-doublebuffer"),
+    ids = param_id,
+)
+def test_pulpopen_tiled_kernels_l2_doublebuffer_rtl(test_params, deeploy_test_dir, toolchain, toolchain_dir, cmake_args,
+                                                skipgen, skipsim) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen_rtl"]
+
+    test_name, l1, config_name = test_params
+    config = create_test_config(
+        test_name = test_name,
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
+        deeploy_test_dir = deeploy_test_dir,
+        toolchain = toolchain,
+        toolchain_dir = toolchain_dir,
+        cmake_args = cmake_args,
+        tiling = True,
+        cores = PULPOPEN_DEFAULT_CORES,
+        l1 = l1,
+        default_mem_level = "L2",
+        double_buffer = True,
+    )
+    run_and_assert_test(test_name, config, skipgen, skipsim)
 
 @pytest.mark.pulpopen_tiled
 @pytest.mark.kernels
@@ -1076,11 +1240,14 @@ def test_pulpopen_tiled_kernels_l2_singlebuffer(test_params, deeploy_test_dir, t
 )
 def test_pulpopen_tiled_kernels_l2_doublebuffer(test_params, deeploy_test_dir, toolchain, toolchain_dir, cmake_args,
                                                 skipgen, skipsim) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen"]
+
     test_name, l1, config_name = test_params
     config = create_test_config(
         test_name = test_name,
-        platform = "PULPOpen",
-        simulator = "gvsoc",
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1093,6 +1260,36 @@ def test_pulpopen_tiled_kernels_l2_doublebuffer(test_params, deeploy_test_dir, t
     )
     run_and_assert_test(test_name, config, skipgen, skipsim)
 
+@pytest.mark.pulpopen_tiled_rtl
+@pytest.mark.models
+@pytest.mark.singlebuffer
+@pytest.mark.l2
+@pytest.mark.parametrize(
+    "test_params",
+    generate_test_params(PULPOPEN_L2_SINGLEBUFFER_MODELS_RTL, "L2-singlebuffer"),
+    ids = param_id,
+)
+def test_pulpopen_tiled_models_l2_singlebuffer_rtl(test_params, deeploy_test_dir, toolchain, toolchain_dir, cmake_args,
+                                               skipgen, skipsim) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen_rtl"]
+
+    test_name, l1, config_name = test_params
+    config = create_test_config(
+        test_name = test_name,
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
+        deeploy_test_dir = deeploy_test_dir,
+        toolchain = toolchain,
+        toolchain_dir = toolchain_dir,
+        cmake_args = cmake_args,
+        tiling = True,
+        cores = PULPOPEN_DEFAULT_CORES,
+        l1 = l1,
+        default_mem_level = "L2",
+        double_buffer = False,
+    )
+    run_and_assert_test(test_name, config, skipgen, skipsim)
 
 @pytest.mark.pulpopen_tiled
 @pytest.mark.models
@@ -1105,11 +1302,14 @@ def test_pulpopen_tiled_kernels_l2_doublebuffer(test_params, deeploy_test_dir, t
 )
 def test_pulpopen_tiled_models_l2_singlebuffer(test_params, deeploy_test_dir, toolchain, toolchain_dir, cmake_args,
                                                skipgen, skipsim) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen"]
+
     test_name, l1, config_name = test_params
     config = create_test_config(
         test_name = test_name,
-        platform = "PULPOpen",
-        simulator = "gvsoc",
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1122,6 +1322,37 @@ def test_pulpopen_tiled_models_l2_singlebuffer(test_params, deeploy_test_dir, to
     )
     run_and_assert_test(test_name, config, skipgen, skipsim)
 
+
+@pytest.mark.pulpopen_tiled_rtl
+@pytest.mark.models
+@pytest.mark.doublebuffer
+@pytest.mark.l2
+@pytest.mark.parametrize(
+    "test_params",
+    generate_test_params(PULPOPEN_L2_DOUBLEBUFFER_MODELS_RTL, "L2-doublebuffer"),
+    ids = param_id,
+)
+def test_pulpopen_tiled_models_l2_doublebuffer_rtl(test_params, deeploy_test_dir, toolchain, toolchain_dir, cmake_args,
+                                               skipgen, skipsim) -> None:
+    
+    platform_config = PLATFORM_CONFIGS["PULPOpen_rtl"]
+
+    test_name, l1, config_name = test_params
+    config = create_test_config(
+        test_name = test_name,
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
+        deeploy_test_dir = deeploy_test_dir,
+        toolchain = toolchain,
+        toolchain_dir = toolchain_dir,
+        cmake_args = cmake_args,
+        tiling = True,
+        cores = PULPOPEN_DEFAULT_CORES,
+        l1 = l1,
+        default_mem_level = "L2",
+        double_buffer = True,
+    )
+    run_and_assert_test(test_name, config, skipgen, skipsim)
 
 @pytest.mark.pulpopen_tiled
 @pytest.mark.models
@@ -1134,11 +1365,14 @@ def test_pulpopen_tiled_models_l2_singlebuffer(test_params, deeploy_test_dir, to
 )
 def test_pulpopen_tiled_models_l2_doublebuffer(test_params, deeploy_test_dir, toolchain, toolchain_dir, cmake_args,
                                                skipgen, skipsim) -> None:
+    
+    platform_config = PLATFORM_CONFIGS["PULPOpen"]
+
     test_name, l1, config_name = test_params
     config = create_test_config(
         test_name = test_name,
-        platform = "PULPOpen",
-        simulator = "gvsoc",
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1151,16 +1385,40 @@ def test_pulpopen_tiled_models_l2_doublebuffer(test_params, deeploy_test_dir, to
     )
     run_and_assert_test(test_name, config, skipgen, skipsim)
 
+@pytest.mark.pulpopen_idma_rtl
+@pytest.mark.kernels
+@pytest.mark.parametrize("test_name", PULPOPEN_IDMA_KERNEL_TESTS_RTL, ids = PULPOPEN_IDMA_KERNEL_TESTS_RTL)
+def test_pulpopen_idma_kernels_rtl(test_name, deeploy_test_dir, toolchain, toolchain_dir, cmake_args, skipgen, skipsim,
+                               profile_untiled) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen_iDMA_rtl"]
+    
+    config = create_test_config(
+        test_name = test_name,
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
+        deeploy_test_dir = deeploy_test_dir,
+        toolchain = toolchain,
+        toolchain_dir = toolchain_dir,
+        cmake_args = cmake_args,
+        tiling = False,
+        cores = PULPOPEN_DEFAULT_CORES,
+        profile_untiled = profile_untiled,
+    )
+    run_and_assert_test(test_name, config, skipgen, skipsim)
 
 @pytest.mark.pulpopen_idma
 @pytest.mark.kernels
-@pytest.mark.parametrize("test_name", PULPOPEN_KERNEL_TESTS, ids = PULPOPEN_KERNEL_TESTS)
+@pytest.mark.parametrize("test_name", PULPOPEN_IDMA_KERNEL_TESTS, ids = PULPOPEN_IDMA_KERNEL_TESTS)
 def test_pulpopen_idma_kernels(test_name, deeploy_test_dir, toolchain, toolchain_dir, cmake_args, skipgen, skipsim,
                                profile_untiled) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen_iDMA"]
+    
     config = create_test_config(
         test_name = test_name,
-        platform = "PULPOpen_iDMA",
-        simulator = "qsim",
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1171,16 +1429,40 @@ def test_pulpopen_idma_kernels(test_name, deeploy_test_dir, toolchain, toolchain
     )
     run_and_assert_test(test_name, config, skipgen, skipsim)
 
+@pytest.mark.pulpopen_idma_rtl
+@pytest.mark.models
+@pytest.mark.parametrize("test_name", PULPOPEN_IDMA_MODEL_TESTS_RTL, ids = PULPOPEN_IDMA_MODEL_TESTS_RTL)
+def test_pulpopen_idma_models_rtl(test_name, deeploy_test_dir, toolchain, toolchain_dir, cmake_args, skipgen, skipsim,
+                              profile_untiled) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen_iDMA_rtl"]
+
+    config = create_test_config(
+        test_name = test_name,
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
+        deeploy_test_dir = deeploy_test_dir,
+        toolchain = toolchain,
+        toolchain_dir = toolchain_dir,
+        cmake_args = cmake_args,
+        tiling = False,
+        cores = PULPOPEN_DEFAULT_CORES,
+        profile_untiled = profile_untiled,
+    )
+    run_and_assert_test(test_name, config, skipgen, skipsim)
 
 @pytest.mark.pulpopen_idma
 @pytest.mark.models
-@pytest.mark.parametrize("test_name", PULPOPEN_MODEL_TESTS, ids = PULPOPEN_MODEL_TESTS)
+@pytest.mark.parametrize("test_name", PULPOPEN_IDMA_MODEL_TESTS, ids = PULPOPEN_IDMA_MODEL_TESTS)
 def test_pulpopen_idma_models(test_name, deeploy_test_dir, toolchain, toolchain_dir, cmake_args, skipgen, skipsim,
                               profile_untiled) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen_iDMA"]
+
     config = create_test_config(
         test_name = test_name,
-        platform = "PULPOpen",
-        simulator = "qsim",
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1191,23 +1473,25 @@ def test_pulpopen_idma_models(test_name, deeploy_test_dir, toolchain, toolchain_
     )
     run_and_assert_test(test_name, config, skipgen, skipsim)
 
-
-@pytest.mark.pulpopen_idma_tiled
+@pytest.mark.pulpopen_idma_tiled_rtl
 @pytest.mark.kernels
 @pytest.mark.singlebuffer
 @pytest.mark.l2
 @pytest.mark.parametrize(
     "test_params",
-    generate_test_params(PULPOPEN_L2_SINGLEBUFFER_KERNELS, "L2-singlebuffer"),
+    generate_test_params(PULPOPEN_IDMA_L2_SINGLEBUFFER_KERNELS_RTL, "L2-singlebuffer"),
     ids = param_id,
 )
-def test_pulpopen_idma_tiled_kernels_l2_singlebuffer(test_params, deeploy_test_dir, toolchain, toolchain_dir,
+def test_pulpopen_idma_tiled_kernels_l2_singlebuffer_rtl(test_params, deeploy_test_dir, toolchain, toolchain_dir,
                                                      cmake_args, skipgen, skipsim) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen_iDMA_rtl"]
+
     test_name, l1, config_name = test_params
     config = create_test_config(
         test_name = test_name,
-        platform = "PULPOpen_iDMA",
-        simulator = "qsim",
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1220,6 +1504,68 @@ def test_pulpopen_idma_tiled_kernels_l2_singlebuffer(test_params, deeploy_test_d
     )
     run_and_assert_test(test_name, config, skipgen, skipsim)
 
+@pytest.mark.pulpopen_idma_tiled
+@pytest.mark.kernels
+@pytest.mark.singlebuffer
+@pytest.mark.l2
+@pytest.mark.parametrize(
+    "test_params",
+    generate_test_params(PULPOPEN_IDMA_L2_SINGLEBUFFER_KERNELS, "L2-singlebuffer"),
+    ids = param_id,
+)
+def test_pulpopen_idma_tiled_kernels_l2_singlebuffer(test_params, deeploy_test_dir, toolchain, toolchain_dir,
+                                                     cmake_args, skipgen, skipsim) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen_iDMA"]
+
+    test_name, l1, config_name = test_params
+    config = create_test_config(
+        test_name = test_name,
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
+        deeploy_test_dir = deeploy_test_dir,
+        toolchain = toolchain,
+        toolchain_dir = toolchain_dir,
+        cmake_args = cmake_args,
+        tiling = True,
+        cores = PULPOPEN_DEFAULT_CORES,
+        l1 = l1,
+        default_mem_level = "L2",
+        double_buffer = False,
+    )
+    run_and_assert_test(test_name, config, skipgen, skipsim)
+
+
+@pytest.mark.pulpopen_idma_tiled_rtl
+@pytest.mark.kernels
+@pytest.mark.doublebuffer
+@pytest.mark.l2
+@pytest.mark.parametrize(
+    "test_params",
+    generate_test_params(PULPOPEN_L2_DOUBLEBUFFER_KERNELS_RTL, "L2-doublebuffer"),
+    ids = param_id,
+)
+def test_pulpopen_idma_tiled_kernels_l2_doublebuffer_rtl(test_params, deeploy_test_dir, toolchain, toolchain_dir,
+                                                     cmake_args, skipgen, skipsim) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen_iDMA_rtl"]
+
+    test_name, l1, config_name = test_params
+    config = create_test_config(
+        test_name = test_name,
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
+        deeploy_test_dir = deeploy_test_dir,
+        toolchain = toolchain,
+        toolchain_dir = toolchain_dir,
+        cmake_args = cmake_args,
+        tiling = True,
+        cores = PULPOPEN_DEFAULT_CORES,
+        l1 = l1,
+        default_mem_level = "L2",
+        double_buffer = True,
+    )
+    run_and_assert_test(test_name, config, skipgen, skipsim)
 
 @pytest.mark.pulpopen_idma_tiled
 @pytest.mark.kernels
@@ -1232,11 +1578,14 @@ def test_pulpopen_idma_tiled_kernels_l2_singlebuffer(test_params, deeploy_test_d
 )
 def test_pulpopen_idma_tiled_kernels_l2_doublebuffer(test_params, deeploy_test_dir, toolchain, toolchain_dir,
                                                      cmake_args, skipgen, skipsim) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen_iDMA"]
+
     test_name, l1, config_name = test_params
     config = create_test_config(
         test_name = test_name,
-        platform = "PULPOpen_iDMA",
-        simulator = "qsim",
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1250,22 +1599,25 @@ def test_pulpopen_idma_tiled_kernels_l2_doublebuffer(test_params, deeploy_test_d
     run_and_assert_test(test_name, config, skipgen, skipsim)
 
 
-@pytest.mark.pulpopen_idma_tiled
+@pytest.mark.pulpopen_idma_tiled_rtl
 @pytest.mark.models
 @pytest.mark.singlebuffer
 @pytest.mark.l2
 @pytest.mark.parametrize(
     "test_params",
-    generate_test_params(PULPOPEN_L2_SINGLEBUFFER_MODELS, "L2-singlebuffer"),
+    generate_test_params(PULPOPEN_IDMA_L2_SINGLEBUFFER_MODELS_RTL, "L2-singlebuffer"),
     ids = param_id,
 )
-def test_pulpopen_idma_tiled_models_l2_singlebuffer(test_params, deeploy_test_dir, toolchain, toolchain_dir, cmake_args,
+def test_pulpopen_idma_tiled_models_l2_singlebuffer_rtl(test_params, deeploy_test_dir, toolchain, toolchain_dir, cmake_args,
                                                     skipgen, skipsim) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen_iDMA_rtl"]
+
     test_name, l1, config_name = test_params
     config = create_test_config(
         test_name = test_name,
-        platform = "PULPOpen_iDMA",
-        simulator = "qsim",
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1278,6 +1630,67 @@ def test_pulpopen_idma_tiled_models_l2_singlebuffer(test_params, deeploy_test_di
     )
     run_and_assert_test(test_name, config, skipgen, skipsim)
 
+@pytest.mark.pulpopen_idma_tiled
+@pytest.mark.models
+@pytest.mark.singlebuffer
+@pytest.mark.l2
+@pytest.mark.parametrize(
+    "test_params",
+    generate_test_params(PULPOPEN_IDMA_L2_SINGLEBUFFER_MODELS, "L2-singlebuffer"),
+    ids = param_id,
+)
+def test_pulpopen_idma_tiled_models_l2_singlebuffer(test_params, deeploy_test_dir, toolchain, toolchain_dir, cmake_args,
+                                                    skipgen, skipsim) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen_iDMA"]
+
+    test_name, l1, config_name = test_params
+    config = create_test_config(
+        test_name = test_name,
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
+        deeploy_test_dir = deeploy_test_dir,
+        toolchain = toolchain,
+        toolchain_dir = toolchain_dir,
+        cmake_args = cmake_args,
+        tiling = True,
+        cores = PULPOPEN_DEFAULT_CORES,
+        l1 = l1,
+        default_mem_level = "L2",
+        double_buffer = False,
+    )
+    run_and_assert_test(test_name, config, skipgen, skipsim)
+
+@pytest.mark.pulpopen_idma_tiled_rtl
+@pytest.mark.models
+@pytest.mark.doublebuffer
+@pytest.mark.l2
+@pytest.mark.parametrize(
+    "test_params",
+    generate_test_params(PULPOPEN_IDMA_L2_DOUBLEBUFFER_MODELS_RTL, "L2-doublebuffer"),
+    ids = param_id,
+)
+def test_pulpopen_idma_tiled_models_l2_doublebuffer_rtl(test_params, deeploy_test_dir, toolchain, toolchain_dir, cmake_args,
+                                                    skipgen, skipsim) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen_iDMA_rtl"]
+
+    test_name, l1, config_name = test_params
+    config = create_test_config(
+        test_name = test_name,
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
+        deeploy_test_dir = deeploy_test_dir,
+        toolchain = toolchain,
+        toolchain_dir = toolchain_dir,
+        cmake_args = cmake_args,
+        tiling = True,
+        cores = PULPOPEN_DEFAULT_CORES,
+        l1 = l1,
+        default_mem_level = "L2",
+        double_buffer = True,
+    )
+    run_and_assert_test(test_name, config, skipgen, skipsim)
 
 @pytest.mark.pulpopen_idma_tiled
 @pytest.mark.models
@@ -1285,16 +1698,19 @@ def test_pulpopen_idma_tiled_models_l2_singlebuffer(test_params, deeploy_test_di
 @pytest.mark.l2
 @pytest.mark.parametrize(
     "test_params",
-    generate_test_params(PULPOPEN_L2_DOUBLEBUFFER_MODELS, "L2-doublebuffer"),
+    generate_test_params(PULPOPEN_IDMA_L2_DOUBLEBUFFER_MODELS, "L2-doublebuffer"),
     ids = param_id,
 )
 def test_pulpopen_idma_tiled_models_l2_doublebuffer(test_params, deeploy_test_dir, toolchain, toolchain_dir, cmake_args,
                                                     skipgen, skipsim) -> None:
+
+    platform_config = PLATFORM_CONFIGS["PULPOpen_iDMA"]
+
     test_name, l1, config_name = test_params
     config = create_test_config(
         test_name = test_name,
-        platform = "PULPOpen_iDMA",
-        simulator = "qsim",
+        platform = platform_config["platform"],
+        simulator = platform_config["simulator"],
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
