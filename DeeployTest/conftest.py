@@ -70,9 +70,18 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "gap9_tiled: mark test as a GAP9 platform test (tiled)")
     config.addinivalue_line("markers", "xdna2: mark test as an XDNA2 (AIE2p) platform test")
     config.addinivalue_line("markers", "pulpopen: mark test as a PULPOpen platform test (untiled)")
-    config.addinivalue_line("markers", "pulpopen_tiled: mark test as a PULPOpen platform test (tiled)")
-    config.addinivalue_line("markers", "pulpopen_idma: mark test as a PULPOpen_iDMA platform test (untiled)")
-    config.addinivalue_line("markers", "pulpopen_idma_tiled: mark test as a PULPOpen_iDMA platform test (tiled)")
+    config.addinivalue_line("markers",
+                            "pulpopen_rtl: mark test as a PULPOpen platform test (untiled) for execution on the rtl platform")
+    config.addinivalue_line("markers", "pulpopen: mark test as a PULPOpen platform test (untiled) for execution on gvsoc")
+    config.addinivalue_line("markers",
+                            "pulpopen_tiled_rtl: mark test as a PULPOpen platform test (tiled) for execution on the rtl platform")
+    config.addinivalue_line("markers", "pulpopen_tiled: mark test as a PULPOpen platform test (tiled) for execution on gvsoc")
+    config.addinivalue_line("markers",
+                            "pulpopen_idma_rtl: mark test as a PULPOpen_iDMA platform test (untiled) for execution on the rtl platform")
+    config.addinivalue_line("markers", "pulpopen_idma: mark test as a PULPOpen_iDMA platform test (untiled) for execution on gvsoc")
+    config.addinivalue_line("markers",
+                            "pulpopen_idma_tiled_rtl: mark test as a PULPOpen_iDMA platform test (tiled) for execution on the rtl platform")
+    config.addinivalue_line("markers", "pulpopen_idma_tiled: mark test as a PULPOpen_iDMA platform test (tiled) for execution on gvsoc")
     config.addinivalue_line("markers", "kernels: mark test as a kernel test (individual operators)")
     config.addinivalue_line("markers", "models: mark test as a model test (full networks)")
     config.addinivalue_line("markers", "singlebuffer: mark test as single-buffer configuration")
