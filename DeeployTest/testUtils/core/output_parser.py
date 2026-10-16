@@ -21,8 +21,8 @@ def parse_test_output(stdout: str, stderr: str = "") -> TestResult:
 
     output = stdout + stderr
 
-    # Look for "Errors: X out of Y" pattern
-    error_match = re.search(r'Errors:\s*(\d+)\s*out\s*of\s*(\d+)', output)
+    # Look for "Errors X/Y" pattern
+    error_match = re.search(r'ERRORS\s*(\d+)/(\d+)', output)
 
     if error_match:
         error_count = int(error_match.group(1))
