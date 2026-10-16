@@ -1235,7 +1235,7 @@ def test_pulpopen_idma_kernels(test_name, deeploy_test_dir, toolchain, toolchain
     config = create_test_config(
         test_name = test_name,
         platform = "PULPOpen_iDMA",
-        simulator = "qsim",
+        simulator = "vsim",
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1255,7 +1255,7 @@ def test_pulpopen_idma_models(test_name, deeploy_test_dir, toolchain, toolchain_
     config = create_test_config(
         test_name = test_name,
         platform = "PULPOpen",
-        simulator = "qsim",
+        simulator = "vsim",
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1282,7 +1282,7 @@ def test_pulpopen_idma_tiled_kernels_l2_singlebuffer(test_params, deeploy_test_d
     config = create_test_config(
         test_name = test_name,
         platform = "PULPOpen_iDMA",
-        simulator = "qsim",
+        simulator = "vsim",
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1311,7 +1311,7 @@ def test_pulpopen_idma_tiled_kernels_l2_doublebuffer(test_params, deeploy_test_d
     config = create_test_config(
         test_name = test_name,
         platform = "PULPOpen_iDMA",
-        simulator = "qsim",
+        simulator = "vsim",
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1340,7 +1340,7 @@ def test_pulpopen_idma_tiled_models_l2_singlebuffer(test_params, deeploy_test_di
     config = create_test_config(
         test_name = test_name,
         platform = "PULPOpen_iDMA",
-        simulator = "qsim",
+        simulator = "vsim",
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1369,7 +1369,7 @@ def test_pulpopen_idma_tiled_models_l2_doublebuffer(test_params, deeploy_test_di
     config = create_test_config(
         test_name = test_name,
         platform = "PULPOpen_iDMA",
-        simulator = "qsim",
+        simulator = "vsim",
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
