@@ -7,6 +7,10 @@ from typing import Dict, Tuple
 from Deeploy.DeeployTypes import NetworkContext, NodeTemplate, OperatorRepresentation, VariableBuffer
 from Deeploy.TilingExtension.AsyncDma import AsyncDma, DirectionWaitingStrategy, DmaDirection, Future
 
+# HAL pulp_idma_transfer_*_and_wait take the (row) length as unsigned short;
+# 1D goes through deeploy_idma_transfer_1d_and_wait (pulp_idma_utils.h), split at runtime
+_MAX_LEN = 2**16 - 1
+
 
 class iDMAChannelFuture(Future):
 
@@ -20,7 +24,7 @@ class iDMA(AsyncDma):
 
     _transferTemplates = {
         1:
-            NodeTemplate("pulp_idma_transfer_1d_and_wait(${direction}, ${ext}, ${loc}, ${length});"),
+            NodeTemplate("deeploy_idma_transfer_1d_and_wait(${direction}, ${ext}, ${loc}, ${length});"),
         2:
             NodeTemplate(
                 "pulp_idma_transfer_2d_and_wait(${direction}, ${ext}, ${loc}, ${length}, ${strideExt}, ${strideLoc}, ${num_reps});"
@@ -46,13 +50,9 @@ class iDMA(AsyncDma):
         elif transferRank == 2:
             length = shape[1]
 
-        iDMA_transfer_size = math.prod(shape)
-
-        assert iDMA_transfer_size <= 2**16, (
-            "iDMA transfer size should be representable with 16 bits, "
-            f"current number of bits required is {math.ceil(math.log2(iDMA_transfer_size))}")
-
+        # 1D is split at runtime; in 2D the row length is 16-bit
         if transferRank == 2:
+            assert length <= _MAX_LEN, (f"iDMA row length {length} exceeds the HAL's 16-bit limit ({_MAX_LEN})")
             assert strideExt[0] >= length, "External stride must be at least equal to the length"
             assert strideLoc[0] >= length, "Local stride must be at least equal to the length"
 
@@ -76,3 +76,30 @@ class iDMA(AsyncDma):
             operatorRepresentation["num_reps"] = iDMA_transfer_size // shape[1]
 
         return operatorRepresentation
+
+
+class iDMAAsyncChannelFuture(Future):
+
+    _initTemplate = NodeTemplate("")
+    _deinitTemplate = NodeTemplate("")
+    _allocTemplate = NodeTemplate("")
+    # One future per direction (channel_id_input / channel_id_output): wait for every transfer of that direction
+    _waitTemplate = NodeTemplate("deeploy_idma_wait_${name}();")
+
+
+# Transfers start without waiting; the tiling code waits per direction only where the data is needed,
+# as with mchan channels.
+class iDMAAsync(iDMA):
+
+    _transferTemplates = {
+        1:
+            NodeTemplate("deeploy_idma_transfer_1d(${direction}, ${ext}, ${loc}, ${length});"),
+        2:
+            NodeTemplate(
+                "deeploy_idma_transfer_2d(${direction}, ${ext}, ${loc}, ${length}, ${strideExt}, ${strideLoc}, ${num_reps});"
+            )
+    }
+    _waitingStrategy = DirectionWaitingStrategy(iDMAAsyncChannelFuture, "channel_id")
+
+    def __init__(self, transferTemplates: Dict[int, NodeTemplate] = _transferTemplates) -> None:
+        super().__init__(transferTemplates)
