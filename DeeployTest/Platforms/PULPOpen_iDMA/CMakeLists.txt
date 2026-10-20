@@ -13,6 +13,11 @@ add_deeploy_executable(${ProjectId} EXCLUDE_FROM_ALL ${SOURCES})
 target_include_directories(${ProjectId} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/inc)
 
 target_link_libraries(${ProjectId} PRIVATE network deeploylib)
+# GVSoC's pulp-open cluster defaults to mchan; this harness needs its iDMA model.
+# L1 (TCDM) size: 256 KB as in the pulp_fpga RTL.
+set(GVSOC_L1_SIZE 0x40000 CACHE STRING "GVSoC pulp-open cluster L1 size in bytes")
+list(APPEND GVSOC_EXTRA_FLAGS --target-property chip/cluster/dma_model=idma
+                              --target-property chip/cluster/l1_size=${GVSOC_L1_SIZE})
 add_gvsoc_emulation(${ProjectId} "pulp-open")
 add_pulp_open_vsim_simulation(${ProjectId})
 add_pulp_open_qsim_simulation(${ProjectId})
