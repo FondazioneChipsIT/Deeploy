@@ -21,6 +21,17 @@ set(PULP_OPEN_COMPILE_FLAGS
   -DPULP_CHIP_STR=pulp
 )
 
+# FPGA: no flash, the host preloads the L3 image into the HyperRAM (fpga/l3.bin,
+# fpga/l3_preload.gdb). The image sits at the top of the RAM, so its size must match.
+set(PULP_HYPERRAM_SIZE 67108864 CACHE STRING "HyperRAM size in bytes on the pulp-open FPGA")
+if(FPGA_TARGET)
+  list(APPEND PULP_OPEN_COMPILE_FLAGS
+    -DDEEPLOY_NO_FLASH
+    -DDEEPLOY_L3_PRELOAD
+    -DCONFIG_HYPERRAM_SIZE=${PULP_HYPERRAM_SIZE}
+  )
+endif()
+
 set(PULP_OPEN_UART_COMPILE_FLAGS
   -DPOS_CONFIG_IO_UART=${FPGA_TARGET}
   -DPOS_CONFIG_IO_UART_BAUDRATE=115200

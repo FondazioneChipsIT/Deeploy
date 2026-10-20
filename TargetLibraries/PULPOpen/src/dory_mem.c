@@ -5,12 +5,16 @@
  */
 
 #include "dory_mem.h"
+
 #include "bsp/bsp.h"
+#include "bsp/ram.h"
+#include "pmsis.h"
+
+// No flash (e.g. FPGA): L3 data is preloaded, no readfs loading
+#ifndef DEEPLOY_NO_FLASH
 #include "bsp/flash.h"
 #include "bsp/fs.h"
 #include "bsp/fs/readfs.h"
-#include "bsp/ram.h"
-#include "pmsis.h"
 
 #ifdef USE_HYPERFLASH
 #include "bsp/flash/hyperflash.h"
@@ -27,6 +31,7 @@ typedef struct pi_mram_conf flash_conf_t;
 typedef struct pi_default_flash_conf flash_conf_t;
 #define flash_conf_init(conf) pi_default_flash_conf_init(conf)
 #endif
+#endif // DEEPLOY_NO_FLASH
 
 #ifdef USE_HYPERRAM
 #include "bsp/ram/hyperram.h"
@@ -37,6 +42,10 @@ typedef struct pi_default_ram_conf ram_conf_t;
 #define ram_conf_init(conf) pi_default_ram_conf_init(conf)
 #endif
 
+struct pi_device ram;
+static ram_conf_t ram_conf;
+
+#ifndef DEEPLOY_NO_FLASH
 #define BUFFER_SIZE 2048 // 128
 static uint8_t buffer[BUFFER_SIZE];
 
@@ -45,9 +54,6 @@ static flash_conf_t flash_conf;
 
 static struct pi_device fs;
 static struct pi_readfs_conf fs_conf;
-
-struct pi_device ram;
-static ram_conf_t ram_conf;
 
 void open_fs() {
   // SCHEREMO: Fix FS
@@ -61,13 +67,17 @@ void open_fs() {
   }
 }
 
+#endif // DEEPLOY_NO_FLASH
+
 void mem_init() {
+#ifndef DEEPLOY_NO_FLASH
   flash_conf_init(&flash_conf);
   pi_open_from_conf(&flash, &flash_conf);
   if (pi_flash_open(&flash)) {
     printf("ERROR: Cannot open flash! Exiting...\n");
     pmsis_exit(-1);
   }
+#endif
 
   ram_conf_init(&ram_conf);
   pi_open_from_conf(&ram, &ram_conf);
@@ -123,6 +133,19 @@ void cl_ram_write(void *dest, void *src, const size_t size) {
   pi_cl_ram_write_wait(&req);
 }
 
+// L3 to L3 copy through an L2 bounce buffer
+#define COPY_BUFFER_SIZE 1024
+static PI_L2 uint8_t copy_buffer[COPY_BUFFER_SIZE];
+
+void cl_ram_copy(void *dest, void *src, const size_t size) {
+  for (size_t offset = 0; offset < size; offset += COPY_BUFFER_SIZE) {
+    size_t chunk = size - offset < COPY_BUFFER_SIZE ? size - offset : COPY_BUFFER_SIZE;
+    cl_ram_read(copy_buffer, (char *)src + offset, chunk);
+    cl_ram_write((char *)dest + offset, copy_buffer, chunk);
+  }
+}
+
+#ifndef DEEPLOY_NO_FLASH
 size_t load_file_to_ram(const void *dest, const char *filename) {
   pi_fs_file_t *fd = pi_fs_open(&fs, filename, 0);
   if (fd == NULL) {
@@ -177,6 +200,8 @@ size_t load_file_to_local(const void *dest, const char *filename) {
   pi_fs_close(fd);
   return offset;
 }
+
+#endif // DEEPLOY_NO_FLASH
 
 // newlib's libm (expf, logf, ...) reports errors through __errno(), which the
 // PULPOS minimal libc does not provide. Here rather than in its own file: this

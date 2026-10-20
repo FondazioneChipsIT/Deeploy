@@ -212,7 +212,7 @@ def generateTestNetworkImplementation(deployer: NetworkDeployer, verbosityCfg: C
     return retStr
 
 
-def generateL3HexDump(deployer: NetworkDeployer, path: str, test_inputs: List, test_outputs: List):
+def _l3BufferBytes(deployer: NetworkDeployer, buf: VariableBuffer, test_inputs: List, test_outputs: List) -> bytes:
 
     def type2TypeStr(dataType) -> Tuple[str, int]:
         if dataType.referencedType.typeName == "float32_t":
@@ -233,38 +233,64 @@ def generateL3HexDump(deployer: NetworkDeployer, path: str, test_inputs: List, t
 
         return retStr, width
 
-    def dumpBuffer(buf: VariableBuffer, path: str):
+    # Check if buffer name matches exactly "input_N" or "output_N" pattern
+    parts = buf.name.split("_")
+    if len(parts) == 2 and parts[0] == "input" and parts[1].isdigit():
+        idx = int(parts[1])
+        array = _shapeBroadcast(deployer.ctxt, test_inputs[idx], f"input_{idx}")
 
-        # Check if buffer name matches exactly "input_N" or "output_N" pattern
-        parts = buf.name.split("_")
-        if len(parts) == 2 and parts[0] == "input" and parts[1].isdigit():
-            idx = int(parts[1])
-            array = _shapeBroadcast(deployer.ctxt, test_inputs[idx], f"input_{idx}")
+    elif len(parts) == 2 and parts[0] == "output" and parts[1].isdigit():
+        idx = int(parts[1])
+        array = _shapeBroadcast(deployer.ctxt, test_outputs[idx], f"output_{idx}")
 
-        elif len(parts) == 2 and parts[0] == "output" and parts[1].isdigit():
-            idx = int(parts[1])
-            array = _shapeBroadcast(deployer.ctxt, test_outputs[idx], f"output_{idx}")
+    elif isinstance(buf, ConstantBuffer):
+        array = buf.values
+    else:
+        raise Exception(f"Unexpected buffer {buf}!")
 
-        elif isinstance(buf, ConstantBuffer):
-            array = buf.values
-        else:
-            raise Exception(f"Unexpected buffer {buf}!")
+    typeStr, width = type2TypeStr(buf._type)
 
-        typeStr, width = type2TypeStr(buf._type)
+    # Word alignment
+    mod = (32 // width)
+    paddingLength = (mod - (array.size % mod)) % mod
+    paddedArray = np.pad(array.flatten(), (0, paddingLength), 'constant')
 
-        # Word alignment
-        mod = (32 // width)
-        paddingLength = (mod - (array.size % mod)) % mod
-        paddedArray = np.pad(array.flatten(), (0, paddingLength), 'constant')
+    return paddedArray.astype(typeStr).tobytes()
 
-        paddedArray.astype(typeStr).tofile(path)
+
+def generateL3HexDump(deployer: NetworkDeployer, path: str, test_inputs: List, test_outputs: List):
 
     # LMACAN: Dump all global buffers with the "extName" attribute
     os.makedirs(path, exist_ok = True)
     for buf in deployer.ctxt.globalObjects.values():
         if hasattr(buf, "extName"):
             pathName = os.path.join(path, f"{buf.extName}.hex")
-            dumpBuffer(buf, pathName)
+            with open(pathName, "wb") as f:
+                f.write(_l3BufferBytes(deployer, buf, test_inputs, test_outputs))
+
+
+def generateL3PreloadImage(deployer: NetworkDeployer, path: str, test_inputs: List, test_outputs: List):
+    """FPGA (DEEPLOY_L3_PRELOAD): write the L3 image laid out by the PULP deployer and the GDB commands
+    that put it in the HyperRAM through OpenOCD (pulp-sdk tools/openocd/pulp_hyperram.tcl)."""
+
+    l3Image = getattr(deployer, "l3Image", [])
+    if not l3Image:
+        return
+
+    image = bytearray(deployer.l3ImageSize)
+    for buf, offset, size in l3Image:
+        data = _l3BufferBytes(deployer, buf, test_inputs, test_outputs)[:size]
+        image[offset:offset + len(data)] = data
+
+    os.makedirs(path, exist_ok = True)
+    imagePath = os.path.abspath(os.path.join(path, "l3.bin"))
+    with open(imagePath, "wb") as f:
+        f.write(image)
+
+    with open(os.path.join(path, "l3_preload.gdb"), "w") as f:
+        f.write(f"# L3 image: {deployer.l3ImageSize} bytes at HyperRAM 0x{deployer.l3ImageAddr:x} "
+                f"(top of {deployer.l3RamSize} bytes)\n")
+        f.write(f"monitor pulp_hyperram_load {imagePath} 0x{deployer.l3ImageAddr:x}\n")
 
 
 def generateTestNetwork(deployer: NetworkDeployer, test_inputs: List[np.ndarray], test_outputs: List[np.ndarray],
@@ -292,6 +318,7 @@ def generateTestNetwork(deployer: NetworkDeployer, test_inputs: List[np.ndarray]
         f.write(testNetworkImplementationStr)
 
     generateL3HexDump(deployer, os.path.join(f'{dumpdir}', 'hex'), test_inputs, test_outputs)
+    generateL3PreloadImage(deployer, os.path.join(f'{dumpdir}', 'fpga'), test_inputs, test_outputs)
 
     clang_format = "{BasedOnStyle: llvm, IndentWidth: 2, ColumnLimit: 160}"
     os.system(f'clang-format -i --style="{clang_format}" {dumpdir}/Network.c')

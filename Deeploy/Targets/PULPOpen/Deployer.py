@@ -27,6 +27,37 @@ _L3InitTemplate = NodeTemplate("""
 load_file_to_ram(${locPtr}, "${extName}.hex");
 """)
 
+# FPGA (DEEPLOY_L3_PRELOAD): the L3 constants and inputs form one image that the host
+# writes into the HyperRAM before loading the ELF (fpga/l3.bin + fpga/l3_preload.gdb).
+# The image must be the first L3 allocation: the HyperRAM allocator is top-down, so it
+# lands at the top of the RAM, where the host put it.
+_L3PreloadReserveTemplate = NodeTemplate("""
+#if CONFIG_HYPERRAM_SIZE != ${ramSize}
+#error "Deeploy laid out the L3 image for a ${ramSize}-byte HyperRAM, CONFIG_HYPERRAM_SIZE differs"
+#endif
+char *deeploy_l3_image = (char *)cl_ram_malloc(${imageSize});
+if (deeploy_l3_image != (char *)${imageAddr}) {
+  printf("ERROR: L3 image at 0x%x, preloaded at ${imageAddr}\\n", (unsigned int)deeploy_l3_image);
+  pmsis_exit(-1);
+}
+""")
+
+_L3PreloadConstTemplate = NodeTemplate("""
+${locPtr} = (${typeName} *)(deeploy_l3_image + ${offset});
+""")
+
+# Inputs keep the L3 location they were given (e.g. inside the L3 arena), as with readfs
+_L3PreloadInputTemplate = NodeTemplate("""
+cl_ram_copy(${locPtr}, deeploy_l3_image + ${offset}, ${size});
+""")
+
+# HyperRAM allocator granularity (pmsis_bsp ram/alloc_extern.c MIN_CHUNK_SIZE)
+_L3_CHUNK = 8
+
+
+def _alignUp(value: int, alignment: int) -> int:
+    return (value + alignment - 1) // alignment * alignment
+
 
 class PULPDeployer(SignPropDeployer):
 
@@ -39,7 +70,8 @@ class PULPDeployer(SignPropDeployer):
                  name: str = 'DeeployNetwork',
                  default_channels_first = False,
                  deeployStateDir: str = "DeeployStateDir",
-                 inputOffsets = {}):
+                 inputOffsets = {},
+                 l3RamSize: int = 64 << 20):
         super().__init__(graph,
                          deploymentPlatform,
                          inputTypes,
@@ -64,6 +96,13 @@ class PULPDeployer(SignPropDeployer):
         ]
 
         self.extNameCount = 0
+
+        # HyperRAM size the FPGA L3 image is laid out for (must match CONFIG_HYPERRAM_SIZE)
+        self.l3RamSize = l3RamSize
+        # FPGA L3 image: list of (buffer, offset, size), filled by generateBufferAllocationCode
+        self.l3Image = []
+        self.l3ImageSize = 0
+        self.l3ImageAddr = 0
 
     def annotateNCores(self) -> None:
         for layer in self.layerBinding.values():
@@ -121,6 +160,10 @@ class PULPDeployer(SignPropDeployer):
             if hasattr(buf, "_memoryLevel") and buf._memoryLevel == "L3" and not buf.name in outputBuffNames:
                 l3ConstBuffer.append(buf)
 
+        L3PreloadStr = ""
+        self.l3Image = []
+        offset = 0
+
         for idx, buf in enumerate(l3ConstBuffer):
 
             locPtr = str(buf._instance)
@@ -133,6 +176,33 @@ class PULPDeployer(SignPropDeployer):
 
             L3FileStr += _L3InitTemplate.generate({"locPtr": locPtr, "extName": extName, "size": size})
 
-        retStr = retStr + L3FileStr
+            preloadArgs = {
+                "locPtr": locPtr,
+                "typeName": buf._type.referencedType.typeName,
+                "offset": offset,
+                "size": size
+            }
+            if isinstance(buf, ConstantBuffer):
+                L3PreloadStr += _L3PreloadConstTemplate.generate(preloadArgs)
+            else:
+                # L3 inputs were already placed with the other variables
+                L3PreloadStr += _L3PreloadInputTemplate.generate(preloadArgs)
 
-        return retStr
+            self.l3Image.append((buf, offset, int(size)))
+            offset = _alignUp(offset + int(size), _L3_CHUNK)
+
+        if not self.l3Image:
+            return retStr
+
+        self.l3ImageSize = offset
+        self.l3ImageAddr = (self.l3RamSize // _L3_CHUNK * _L3_CHUNK) - self.l3ImageSize
+
+        reserveStr = _L3PreloadReserveTemplate.generate({
+            "ramSize": self.l3RamSize,
+            "imageSize": self.l3ImageSize,
+            "imageAddr": hex(self.l3ImageAddr)
+        })
+
+        # The reservation goes before every other L3 allocation, the pointers after them
+        return ("#ifdef DEEPLOY_L3_PRELOAD\n" + reserveStr + "#endif\n" + retStr + "#ifdef DEEPLOY_L3_PRELOAD\n" +
+                L3PreloadStr + "#else\n" + L3FileStr + "#endif\n")

@@ -90,7 +90,7 @@ int main(void) {
     return -1;
 
   mem_init();
-#ifndef NOFLASH
+#if !defined(NOFLASH) && !defined(DEEPLOY_NO_FLASH)
   open_fs();
 #endif
 
