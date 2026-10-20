@@ -126,7 +126,7 @@ void cl_ram_write(void *dest, void *src, const size_t size) {
 size_t load_file_to_ram(const void *dest, const char *filename) {
   pi_fs_file_t *fd = pi_fs_open(&fs, filename, 0);
   if (fd == NULL) {
-    printf("ERROR: Cannot open file %s! Exiting...", filename);
+    printf("ERROR: Cannot open file %s! Exiting...\n", filename);
     pmsis_exit(-4);
   }
 
@@ -147,13 +147,15 @@ size_t load_file_to_ram(const void *dest, const char *filename) {
     offset += load_size;
   } while (offset < size);
 
+  // Each open allocates L2 (file + cache): release it, large networks load many files
+  pi_fs_close(fd);
   return offset;
 }
 
 size_t load_file_to_local(const void *dest, const char *filename) {
   pi_fs_file_t *fd = pi_fs_open(&fs, filename, 0);
   if (fd == NULL) {
-    printf("ERROR: Cannot open file %s! Exiting...", filename);
+    printf("ERROR: Cannot open file %s! Exiting...\n", filename);
     pmsis_exit(-4);
   }
 
@@ -172,5 +174,15 @@ size_t load_file_to_local(const void *dest, const char *filename) {
     offset += load_size;
   }
 
+  pi_fs_close(fd);
   return offset;
 }
+
+// newlib's libm (expf, logf, ...) reports errors through __errno(), which the
+// PULPOS minimal libc does not provide. Here rather than in its own file: this
+// object is always linked (mem_init), while a lone stub in the static library
+// would be skipped, since libm needs it only after the library is scanned.
+// Weak, so a real libc __errno wins; used, so LTO keeps it for libm.
+static int deeploy_errno;
+
+__attribute__((weak, used)) int *__errno(void) { return &deeploy_errno; }

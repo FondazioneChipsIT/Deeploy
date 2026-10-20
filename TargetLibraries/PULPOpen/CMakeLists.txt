@@ -88,6 +88,9 @@ target_compile_options(deeploypulp PUBLIC ${PULP_SDK_COMPILE_FLAGS})
 target_link_libraries(deeploypulp PUBLIC pulp-nn-mixed)
 target_link_libraries(deeploypulp INTERFACE pulp-sdk)
 target_sources(deeploypulp INTERFACE $<TARGET_OBJECTS:pulp-sdk>)
+# libm needs __errno (stub in dory_mem.c) only after LTO has dropped unreferenced
+# symbols; -u makes it a link root so LTO keeps it
+target_link_options(deeploypulp INTERFACE -Wl,-u,__errno)
 
 set(PULP_NNX_PLATFORMS "Siracusa;Siracusa_w_neureka")
 if (platform IN_LIST PULP_NNX_PLATFORMS)
