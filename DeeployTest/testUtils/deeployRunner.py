@@ -255,6 +255,9 @@ def create_config_from_args(args: argparse.Namespace,
     if getattr(args, 'profileMicrobenchmark', False):
         gen_args_list.append("--profileMicrobenchmark")
 
+    if getattr(args, 'dma', None):
+        gen_args_list.append(f"--dma={args.dma}")
+
     config = DeeployTestConfig(
         test_name = test_name,
         test_dir = test_dir_abs,
@@ -369,6 +372,7 @@ def main(default_platform: Optional[str] = None,
         "chimera": "Chimera",
         "softhier": "SoftHier",
         "xdna2": "XDNA2",
+        "pulpopen": "PULPOpen",
     }
 
     if args.platform:
@@ -409,6 +413,7 @@ def main(default_platform: Optional[str] = None,
             "Snitch": "gvsoc",
             "Chimera": "gvsoc",
             "SoftHier": "gvsoc",
+            "PULPOpen": "gvsoc",
         }
         simulator = simulator_map.get(platform, "host")
         log.info(f"No simulator specified, using default for {platform}: {simulator}")
@@ -421,6 +426,9 @@ def main(default_platform: Optional[str] = None,
         platform_specific_cmake_args.append(f"-DNUM_CORES={args.cores}")
     elif hasattr(args, 'num_cores'):
         platform_specific_cmake_args.append(f"-DNUM_CORES={args.num_cores}")
+
+    if hasattr(args, 'dma'):
+        platform_specific_cmake_args.append(f"-DPULP_DMA={args.dma.upper()}")
 
     if hasattr(args, 'num_clusters'):
         platform_specific_cmake_args.append(f"-DNUM_CLUSTERS={args.num_clusters}")
