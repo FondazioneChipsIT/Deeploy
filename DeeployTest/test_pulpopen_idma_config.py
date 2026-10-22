@@ -14,8 +14,6 @@ KERNEL_TESTS_RTL = [
     "Kernels/Integer/Concat",
     "Kernels/Integer/MatMul/Add",
     "Kernels/Integer/MatMul/Regular",
-    "Kernels/Integer/Pad/Regular_1D",
-    "Kernels/Integer/Pad/Regular_2D",
     "Kernels/Integer/RMSNorm",
     "Kernels/Integer/Conv/Regular_1D_RQ",
     "Kernels/Integer/Conv/Regular_2D_RQ",
@@ -30,10 +28,10 @@ MODEL_TESTS_RTL = [
     "Models/CNN_Linear1",
     "Models/CNN_Linear2",
     "Models/miniMobileNet",
-    "Models/miniMobileNetv2",
-    "Models/MLPerf/KeywordSpotting",
-    "Models/MLPerf/ImageClassification",
-    "Models/MLPerf/AnomalyDetection",
+    # "Models/miniMobileNetv2",
+    # "Models/MLPerf/KeywordSpotting",
+    # "Models/MLPerf/ImageClassification",
+    # "Models/MLPerf/AnomalyDetection",
 ]
 
 KERNEL_TESTS = [

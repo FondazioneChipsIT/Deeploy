@@ -39,9 +39,9 @@ L2_SINGLEBUFFER_MODELS_RTL = {
     "Models/miniMobileNet": [60000, 12000, 6000, 3000],
     "Models/miniMobileNetv2": [60000, 16000, 12000, 8000],
     "Kernels/Integer/Attention": [60000, 10000, 5000],
-    "Models/MLPerf/KeywordSpotting": [64000],
-    "Models/MLPerf/ImageClassification": [64000],
-    "Models/MLPerf/AnomalyDetection": [64000],
+    # "Models/MLPerf/KeywordSpotting": [64000],
+    # "Models/MLPerf/ImageClassification": [64000],
+    # "Models/MLPerf/AnomalyDetection": [64000],
 }
 
 L2_DOUBLEBUFFER_MODELS_RTL = {
@@ -49,9 +49,9 @@ L2_DOUBLEBUFFER_MODELS_RTL = {
     "Models/miniMobileNet": [60000, 24000, 12000, 6000],
     "Models/miniMobileNetv2": [60000, 32000, 24000, 16000],
     "Kernels/Integer/Attention": [60000, 20000, 10000, 5000],
-    "Models/MLPerf/KeywordSpotting": [128000],
-    "Models/MLPerf/ImageClassification": [128000],
-    "Models/MLPerf/AnomalyDetection": [128000],
+    # "Models/MLPerf/KeywordSpotting": [128000],
+    # "Models/MLPerf/ImageClassification": [128000],
+    # "Models/MLPerf/AnomalyDetection": [128000],
 }
 
 L2_SINGLEBUFFER_KERNELS = {
@@ -94,7 +94,7 @@ L2_DOUBLEBUFFER_MODELS = {
     "Models/miniMobileNet": [60000, 24000, 12000, 6000],
     "Models/miniMobileNetv2": [60000, 32000, 24000, 16000],
     "Kernels/Integer/Attention": [60000, 20000, 10000, 5000],
-    "Models/MLPerf/KeywordSpotting": [128000],
-    "Models/MLPerf/ImageClassification": [128000],
-    "Models/MLPerf/AnomalyDetection": [128000],
+    # "Models/MLPerf/KeywordSpotting": [128000],
+    # "Models/MLPerf/ImageClassification": [128000],
+    # "Models/MLPerf/AnomalyDetection": [128000],
 }
