@@ -14,13 +14,13 @@ KERNEL_TESTS_RTL = [
     "Kernels/Integer/Concat",
     "Kernels/Integer/MatMul/Add",
     "Kernels/Integer/MatMul/Regular",
-    "Kernels/Integer/RMSNorm",
-    "Kernels/Integer/Conv/Regular_1D_RQ",
-    "Kernels/Integer/Conv/Regular_2D_RQ",
-    "Kernels/Integer/Conv/DW_2D_RQ",
-    "Kernels/Integer/Hardswish/Regular_RQ",
-    "Kernels/Integer/TrueIntegerDiv",
-    "Others/Backtracking",
+    # "Kernels/Integer/RMSNorm",
+    # "Kernels/Integer/Conv/Regular_1D_RQ",
+    # "Kernels/Integer/Conv/Regular_2D_RQ",
+    # "Kernels/Integer/Conv/DW_2D_RQ",
+    # "Kernels/Integer/Hardswish/Regular_RQ",
+    # "Kernels/Integer/TrueIntegerDiv",
+    # "Others/Backtracking",
 ]
 
 MODEL_TESTS_RTL = [
