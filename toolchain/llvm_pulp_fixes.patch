@@ -1,0 +1,40 @@
+diff --git a/llvm/lib/Target/RISCV/PULP/PULPHardwareLoops.cpp b/llvm/lib/Target/RISCV/PULP/PULPHardwareLoops.cpp
+index f42031540..ce0d6a9ab 100644
+--- a/llvm/lib/Target/RISCV/PULP/PULPHardwareLoops.cpp
++++ b/llvm/lib/Target/RISCV/PULP/PULPHardwareLoops.cpp
+@@ -774,6 +774,10 @@ PULPHardwareLoops::getLoopTripCount(MachineLoop *L,
+ 
+   if (InitialValue->isReg()) {
+     llvm::Register R = InitialValue->getReg();
++    // Physical registers (e.g. x0) have no unique virtual register def
++    if (!R.isVirtual() || !MRI->getVRegDef(R)) {
++      return nullptr;
++    }
+     MachineBasicBlock *DefBB = MRI->getVRegDef(R)->getParent();
+     if (!MDT->properlyDominates(DefBB, Header)) {
+       int64_t V;
+@@ -785,6 +789,10 @@ PULPHardwareLoops::getLoopTripCount(MachineLoop *L,
+   }
+   if (EndValue->isReg()) {
+     llvm::Register R = EndValue->getReg();
++    // Physical registers (e.g. x0) have no unique virtual register def
++    if (!R.isVirtual() || !MRI->getVRegDef(R)) {
++      return nullptr;
++    }
+     MachineBasicBlock *DefBB = MRI->getVRegDef(R)->getParent();
+     if (!MDT->properlyDominates(DefBB, Header)) {
+       int64_t V;
+diff --git a/llvm/lib/Target/RISCV/RISCVTargetTransformInfo.cpp b/llvm/lib/Target/RISCV/RISCVTargetTransformInfo.cpp
+index 416c3cb91..1788e9593 100644
+--- a/llvm/lib/Target/RISCV/RISCVTargetTransformInfo.cpp
++++ b/llvm/lib/Target/RISCV/RISCVTargetTransformInfo.cpp
+@@ -1053,7 +1053,8 @@ InstructionCost RISCVTTIImpl::getMemoryOpCost(unsigned Opcode, Type *Src,
+   // possible accessed by the instruction.  Note that BasicTTI already
+   // handles the LT.first term for us.
+   if (std::pair<InstructionCost, MVT> LT = getTypeLegalizationCost(Src);
+-      LT.second.isVector() && CostKind != TTI::TCK_CodeSize)
++      ST->hasVInstructions() && LT.second.isVector() &&
++      CostKind != TTI::TCK_CodeSize)
+     BaseCost *= TLI->getLMULCost(LT.second);
+   return Cost + BaseCost;
+ 
