@@ -13,6 +13,10 @@ from Deeploy.Logging import DEFAULT_LOGGER as log
 from .config import DeeployTestConfig
 from .output_parser import TestResult, parse_test_output
 
+# Platforms whose runtime is built from the PULP SDK, which must know where it runs (SDK_PLATFORM)
+_PULP_SDK_PLATFORMS = ("Siracusa", "Siracusa_w_neureka", "PULPOpen")
+_PULP_SDK_PLATFORM_BY_SIMULATOR = {"vsim": "RTL", "vsim.gui": "RTL", "fpga": "FPGA"}
+
 
 def generate_network(config: DeeployTestConfig, skip: bool = False) -> None:
     """
@@ -88,6 +92,14 @@ def configure_cmake(config: DeeployTestConfig) -> None:
     # Add GVSOC_INSTALL_DIR if available
     if config.gvsoc_install_dir:
         cmd.append(f"-DGVSOC_INSTALL_DIR={config.gvsoc_install_dir}")
+
+    if config.simulator == 'fpga' and config.platform != 'PULPOpen':
+        raise ValueError(f"Simulator 'fpga' is only supported on PULPOpen, not on {config.platform}")
+
+    # Always set it, so a value cached by a previous run in the same build directory cannot leak in.
+    # Added before the user arguments, so an explicit -DSDK_PLATFORM still wins.
+    if config.platform in _PULP_SDK_PLATFORMS:
+        cmd.append(f"-DSDK_PLATFORM={_PULP_SDK_PLATFORM_BY_SIMULATOR.get(config.simulator, 'GVSOC')}")
 
     for arg in config.cmake_args:
         if not arg.startswith("-D"):
@@ -166,6 +178,12 @@ def run_simulation(config: DeeployTestConfig, skip: bool = False) -> TestResult:
     if skip:
         log.info(f"Skipping simulation for {config.test_name}")
         return TestResult(success = True, error_count = 0, total_count = 0, stdout = "Skipped")
+
+    if config.simulator == 'fpga':
+        # Build-only: running on the board is not automated
+        binary_path = Path(config.build_dir) / "bin" / config.test_name
+        log.warning(f"FPGA build-only, not run: load {binary_path} on the board")
+        return TestResult(success=True, error_count=0, total_count=0, stdout="Skipped (FPGA build-only)")
 
     if config.simulator == 'none':
         raise RuntimeError("No simulator specified!")

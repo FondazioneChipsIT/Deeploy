@@ -59,13 +59,29 @@ set(PULP_SDK_BASE_INCLUDE
   ${PULP_SDK_HOME}/rtos/pmsis/pmsis_bsp/include
 )
 
+# Execution platform the PULP SDK runtime is built for (selects __PLATFORM__ in pulpos)
+set(SDK_PLATFORM GVSOC CACHE STRING "PULP SDK execution platform (GVSOC, RTL, FPGA)")
+set_property(CACHE SDK_PLATFORM PROPERTY STRINGS GVSOC RTL FPGA)
+if(NOT SDK_PLATFORM MATCHES "^(GVSOC|RTL|FPGA)$")
+  message(FATAL_ERROR "[Deeploy PULP-SDK] Unknown SDK_PLATFORM '${SDK_PLATFORM}'. Supported: GVSOC, RTL, FPGA")
+endif()
+message(STATUS "[Deeploy PULP-SDK] SDK platform = ${SDK_PLATFORM}")
+
+# On FPGA there is no simulator to capture stdout, so printf goes through the UART
+if(SDK_PLATFORM STREQUAL "FPGA")
+  set(PULP_SDK_IO_UART 1)
+else()
+  set(PULP_SDK_IO_UART 0)
+endif()
+
 set(PULP_SDK_BASE_COMPILE_FLAGS
   -D__riscv__
   -D__CONFIG_UDMA__
   -D__PULPOS2__
-  -D__PLATFORM__=ARCHI_PLATFORM_GVSOC
+  -D__PLATFORM__=ARCHI_PLATFORM_${SDK_PLATFORM}
+  -D__PLATFORM_${SDK_PLATFORM}__
   -DARCHI_CLUSTER_NB_PE=8
-  -DPOS_CONFIG_IO_UART=0
+  -DPOS_CONFIG_IO_UART=${PULP_SDK_IO_UART}
   -DPOS_CONFIG_IO_UART_BAUDRATE=115200
   -DPOS_CONFIG_IO_UART_ITF=0
   -D__TRACE_LEVEL__=3

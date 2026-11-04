@@ -67,7 +67,8 @@ class DeeployRunnerArgumentParser(argparse.ArgumentParser):
                           type = str,
                           default = None,
                           help = 'Simulator to use: gvsoc, banshee, qemu, vsim, host, none — '
-                          'or "board" to flash and run on the physical target (GAP9 only)\n')
+                          'or "board" to flash and run on the physical target (GAP9 only), '
+                          'or "fpga" to only build for the FPGA (PULPOpen only)\n')
         self.add_argument('-v', action = 'count', dest = 'verbose', default = 0, help = 'Increase verbosity level\n')
         self.add_argument('-D',
                           dest = 'cmake',
