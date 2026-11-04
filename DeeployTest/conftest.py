@@ -50,6 +50,12 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         default = [],
         help = "Additional CMake arguments (can be used multiple times)",
     )
+    parser.addoption(
+        "--simulator",
+        action = "store",
+        default = None,
+        help = "Override the platform's default simulator",
+    )
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -160,3 +166,9 @@ def toolchain(request):
 def cmake_args(request):
     """Return additional CMake arguments."""
     return request.config.getoption("--cmake-args")
+
+
+@pytest.fixture
+def simulator(request):
+    """Return the simulator override, or None to use the platform default."""
+    return request.config.getoption("--simulator")

@@ -1107,12 +1107,12 @@ def test_xheep_kernels(test_name, deeploy_test_dir, toolchain, toolchain_dir, cm
 @pytest.mark.kernels
 @pytest.mark.parametrize("test_name", PULPOPEN_KERNEL_TESTS, ids = PULPOPEN_KERNEL_TESTS)
 def test_pulpopen_kernels(test_name, deeploy_test_dir, toolchain, toolchain_dir, cmake_args, skipgen, skipsim,
-                          profile_untiled) -> None:
+                          profile_untiled, simulator) -> None:
     platform_config = PLATFORM_CONFIGS["PULPOpen"]
     config = create_test_config(
         test_name = test_name,
         platform = platform_config["platform"],
-        simulator = platform_config["simulator"],
+        simulator = simulator or platform_config["simulator"],
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1128,14 +1128,14 @@ def test_pulpopen_kernels(test_name, deeploy_test_dir, toolchain, toolchain_dir,
 @pytest.mark.models
 @pytest.mark.parametrize("test_name", PULPOPEN_MODEL_TESTS, ids = PULPOPEN_MODEL_TESTS)
 def test_pulpopen_models(test_name, deeploy_test_dir, toolchain, toolchain_dir, cmake_args, skipgen, skipsim,
-                         profile_untiled) -> None:
+                         profile_untiled, simulator) -> None:
 
     platform_config = PLATFORM_CONFIGS["PULPOpen"]
 
     config = create_test_config(
         test_name = test_name,
         platform = platform_config["platform"],
-        simulator = platform_config["simulator"],
+        simulator = simulator or platform_config["simulator"],
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1157,7 +1157,7 @@ def test_pulpopen_models(test_name, deeploy_test_dir, toolchain, toolchain_dir, 
     ids = param_id,
 )
 def test_pulpopen_tiled_kernels_l2_singlebuffer(test_params, deeploy_test_dir, toolchain, toolchain_dir, cmake_args,
-                                                skipgen, skipsim) -> None:
+                                                skipgen, skipsim, simulator) -> None:
 
     platform_config = PLATFORM_CONFIGS["PULPOpen"]
 
@@ -1165,7 +1165,7 @@ def test_pulpopen_tiled_kernels_l2_singlebuffer(test_params, deeploy_test_dir, t
     config = create_test_config(
         test_name = test_name,
         platform = platform_config["platform"],
-        simulator = platform_config["simulator"],
+        simulator = simulator or platform_config["simulator"],
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1189,7 +1189,7 @@ def test_pulpopen_tiled_kernels_l2_singlebuffer(test_params, deeploy_test_dir, t
     ids = param_id,
 )
 def test_pulpopen_tiled_kernels_l2_doublebuffer(test_params, deeploy_test_dir, toolchain, toolchain_dir, cmake_args,
-                                                skipgen, skipsim) -> None:
+                                                skipgen, skipsim, simulator) -> None:
 
     platform_config = PLATFORM_CONFIGS["PULPOpen"]
 
@@ -1197,7 +1197,7 @@ def test_pulpopen_tiled_kernels_l2_doublebuffer(test_params, deeploy_test_dir, t
     config = create_test_config(
         test_name = test_name,
         platform = platform_config["platform"],
-        simulator = platform_config["simulator"],
+        simulator = simulator or platform_config["simulator"],
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1221,7 +1221,7 @@ def test_pulpopen_tiled_kernels_l2_doublebuffer(test_params, deeploy_test_dir, t
     ids = param_id,
 )
 def test_pulpopen_tiled_models_l2_singlebuffer(test_params, deeploy_test_dir, toolchain, toolchain_dir, cmake_args,
-                                               skipgen, skipsim) -> None:
+                                               skipgen, skipsim, simulator) -> None:
 
     platform_config = PLATFORM_CONFIGS["PULPOpen"]
 
@@ -1229,7 +1229,7 @@ def test_pulpopen_tiled_models_l2_singlebuffer(test_params, deeploy_test_dir, to
     config = create_test_config(
         test_name = test_name,
         platform = platform_config["platform"],
-        simulator = platform_config["simulator"],
+        simulator = simulator or platform_config["simulator"],
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
@@ -1253,7 +1253,7 @@ def test_pulpopen_tiled_models_l2_singlebuffer(test_params, deeploy_test_dir, to
     ids = param_id,
 )
 def test_pulpopen_tiled_models_l2_doublebuffer(test_params, deeploy_test_dir, toolchain, toolchain_dir, cmake_args,
-                                               skipgen, skipsim) -> None:
+                                               skipgen, skipsim, simulator) -> None:
 
     platform_config = PLATFORM_CONFIGS["PULPOpen"]
 
@@ -1261,7 +1261,7 @@ def test_pulpopen_tiled_models_l2_doublebuffer(test_params, deeploy_test_dir, to
     config = create_test_config(
         test_name = test_name,
         platform = platform_config["platform"],
-        simulator = platform_config["simulator"],
+        simulator = simulator or platform_config["simulator"],
         deeploy_test_dir = deeploy_test_dir,
         toolchain = toolchain,
         toolchain_dir = toolchain_dir,
