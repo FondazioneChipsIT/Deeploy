@@ -6,7 +6,7 @@
 ##  Simulation Config  ##
 #########################
 
-set(QUESTA questa-2022.3 CACHE STRING "QuestaSim version for RTL simulation")
+set(QUESTA vsim CACHE STRING "QuestaSim version for RTL simulation")
 set(VERILATOR verilator-5.040 CACHE STRING "Verilator version for RTL simulation")
 set(VCS vcs-2020.12 CACHE STRING "VCS version for RTL simulations" )
 

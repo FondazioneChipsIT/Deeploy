@@ -25,6 +25,7 @@ This file contains the changelog for the Deeploy project. The changelog is divid
 - Match GAP9 SDK MLPerf Tiny Performance with Specialised Depthwise and Pointwise Kernels [#206](https://github.com/pulp-platform/Deeploy/pull/206)
 - Add support for the X-HEEP platform [#200](https://github.com/pulp-platform/Deeploy/pull/200)
 - PULP-Open iDMA Support and Tests, and LLVM Update to Clang 20 [#216](https://github.com/pulp-platform/Deeploy/pull/216)
+- PULP-Open RTL Simulation with QuestaSim and FPGA Builds [#XXX](https://github.com/pulp-platform/Deeploy/pull/XXX)
 
 ### Added
 - tests for Regular and DW Conv2D with 3x3 kernel
@@ -53,6 +54,10 @@ This file contains the changelog for the Deeploy project. The changelog is divid
 - PULP-Open test suite (`pulpopen` and `pulpopen_tiled` markers), including FP32 tests now that the toolchain supports `zfinx`
 - `cmake/clang_resource_dir.cmake` to locate compiler-rt without a hardcoded clang version
 - picolibc build for `rv32imc_zfinx`
+- PULP-Open RTL simulation with QuestaSim (`-s vsim` / `-s vsim.gui`), following the PULP SDK RTL flow in a per-build work directory
+- PULP-Open FPGA builds (`-s fpga`): build-only, with `printf` routed to the UART
+- `--simulator` pytest option to run the PULP-Open tests on another simulator than GVSoC
+- `README_PULPOpen.md` describing how to run on GVSoC, RTL and FPGA
 
 ### Changed
 - Refactor the topology optimization pass `NeurekaReshapePointwiseConvolutionPass` and Neureka's Tile constraints
@@ -78,6 +83,7 @@ This file contains the changelog for the Deeploy project. The changelog is divid
 - MemPool toolchain picks `-misched-topdown` or `-misched-prera-direction=topdown` depending on the LLVM version, and disables GlobalMerge to avoid Banshee corrupting unaligned ELF segment tails
 - PULP-Open compiles for `rv32imc_zfinx_xpulpv2` (hardware FP32 instead of soft-float)
 - Build LLVM with `-DLLVM_DISABLE_ASSEMBLY_FILES=ON` so ccache does not break the BLAKE3 assembly sources
+- The PULP SDK runtime is built for the selected `SDK_PLATFORM` (`GVSOC`, `RTL` or `FPGA`, set from the simulator) instead of always for GVSoC
 
 ### Fixed
 - Fix Neureka's output-channels subtile size (in ConvTemplate) and Dense/DW/PW tile constraints
