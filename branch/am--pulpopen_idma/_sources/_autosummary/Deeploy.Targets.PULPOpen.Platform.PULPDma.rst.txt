@@ -1,0 +1,83 @@
+.. SPDX-FileCopyrightText: 2024 ETH Zurich and University of Bologna
+..
+.. SPDX-License-Identifier: Apache-2.0
+
+Deeploy.Targets.PULPOpen.Platform.PULPDma
+=========================================
+
+.. currentmodule:: Deeploy.Targets.PULPOpen.Platform
+
+.. autoclass:: PULPDma
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   
+   .. rubric:: Methods
+   .. automethod:: __init__
+
+   .. autosummary::
+   
+      ~PULPDma.encode
+      ~PULPDma.replace
+      ~PULPDma.split
+      ~PULPDma.rsplit
+      ~PULPDma.join
+      ~PULPDma.capitalize
+      ~PULPDma.casefold
+      ~PULPDma.title
+      ~PULPDma.center
+      ~PULPDma.count
+      ~PULPDma.expandtabs
+      ~PULPDma.find
+      ~PULPDma.partition
+      ~PULPDma.index
+      ~PULPDma.ljust
+      ~PULPDma.lower
+      ~PULPDma.lstrip
+      ~PULPDma.rfind
+      ~PULPDma.rindex
+      ~PULPDma.rjust
+      ~PULPDma.rstrip
+      ~PULPDma.rpartition
+      ~PULPDma.splitlines
+      ~PULPDma.strip
+      ~PULPDma.swapcase
+      ~PULPDma.translate
+      ~PULPDma.upper
+      ~PULPDma.startswith
+      ~PULPDma.endswith
+      ~PULPDma.removeprefix
+      ~PULPDma.removesuffix
+      ~PULPDma.isascii
+      ~PULPDma.islower
+      ~PULPDma.isupper
+      ~PULPDma.istitle
+      ~PULPDma.isspace
+      ~PULPDma.isdecimal
+      ~PULPDma.isdigit
+      ~PULPDma.isnumeric
+      ~PULPDma.isalpha
+      ~PULPDma.isalnum
+      ~PULPDma.isidentifier
+      ~PULPDma.isprintable
+      ~PULPDma.zfill
+      ~PULPDma.format
+      ~PULPDma.format_map
+      ~PULPDma.maketrans
+      ~PULPDma.__init__
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PULPDma.dmaClass
+      ~PULPDma.MCHAN
+      ~PULPDma.IDMA
+   
+   

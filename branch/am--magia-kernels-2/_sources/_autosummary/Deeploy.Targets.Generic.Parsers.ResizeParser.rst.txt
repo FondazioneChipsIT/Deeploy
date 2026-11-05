@@ -1,0 +1,39 @@
+.. SPDX-FileCopyrightText: 2024 ETH Zurich and University of Bologna
+..
+.. SPDX-License-Identifier: Apache-2.0
+
+Deeploy.Targets.Generic.Parsers.ResizeParser
+============================================
+
+.. currentmodule:: Deeploy.Targets.Generic.Parsers
+
+.. autoclass:: ResizeParser
+   :members:
+   :show-inheritance:
+   :inherited-members:
+
+   
+   
+   .. rubric:: Methods
+   .. automethod:: __init__
+
+   .. autosummary::
+   
+      ~ResizeParser.__init__
+      ~ResizeParser.parse
+      ~ResizeParser.parseInputs
+      ~ResizeParser.parseNode
+      ~ResizeParser.parseNodeCtxt
+      ~ResizeParser.parseOutputs
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ResizeParser.operatorRepresentation
+   
+   
