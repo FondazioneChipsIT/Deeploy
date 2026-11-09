@@ -101,6 +101,55 @@ def pytest_configure(config: pytest.Config) -> None:
         coloredlogs.install(level = 'WARNING', logger = log, fmt = DEFAULT_FMT)
 
 
+_RTL_SIMULATORS = ("vsim", "vsim.gui")
+
+
+def _pulpopen_rtl_selection():
+    """Return the (marker, kind) -> allowed parameters map for PULP-Open runs on RTL.
+
+    RTL simulation is much slower than GVSoC, so only a subset of the PULP-Open tests runs there.
+    Untiled entries are test names; tiled entries are (test_name, l1, config_name) tuples, matching the
+    parameters generated in test_platforms.py.
+    """
+    from test_pulpopen_config import KERNEL_TESTS_RTL, MODEL_TESTS_RTL
+    from test_pulpopen_tiled_config import L2_DOUBLEBUFFER_KERNELS_RTL, L2_DOUBLEBUFFER_MODELS_RTL, \
+        L2_SINGLEBUFFER_KERNELS_RTL, L2_SINGLEBUFFER_MODELS_RTL
+
+    def tiled(*dicts_and_configs):
+        return {(name, l1, cfg) for d, cfg in dicts_and_configs for name, l1s in d.items() for l1 in l1s}
+
+    return {
+        ("pulpopen", "kernels"): set(KERNEL_TESTS_RTL),
+        ("pulpopen", "models"): set(MODEL_TESTS_RTL),
+        ("pulpopen_tiled", "kernels"): tiled((L2_SINGLEBUFFER_KERNELS_RTL, "L2-singlebuffer"),
+                                             (L2_DOUBLEBUFFER_KERNELS_RTL, "L2-doublebuffer")),
+        ("pulpopen_tiled", "models"): tiled((L2_SINGLEBUFFER_MODELS_RTL, "L2-singlebuffer"),
+                                            (L2_DOUBLEBUFFER_MODELS_RTL, "L2-doublebuffer")),
+    }
+
+
+def pytest_collection_modifyitems(config: pytest.Config, items: list) -> None:
+    """Native PyTest hook: on RTL simulators, restrict PULP-Open tests to their RTL subset."""
+    if config.getoption("--simulator") not in _RTL_SIMULATORS:
+        return
+
+    selection = _pulpopen_rtl_selection()
+    kept, deselected = [], []
+    for item in items:
+        callspec = getattr(item, "callspec", None)
+        marker = next((m for m in ("pulpopen", "pulpopen_tiled") if item.get_closest_marker(m)), None)
+        kind = next((k for k in ("kernels", "models") if item.get_closest_marker(k)), None)
+        if callspec is None or marker is None or kind is None:
+            kept.append(item)
+            continue
+        param = callspec.params.get("test_name", callspec.params.get("test_params"))
+        (kept if param in selection[(marker, kind)] else deselected).append(item)
+
+    if deselected:
+        config.hook.pytest_deselected(items = deselected)
+        items[:] = kept
+
+
 @pytest.fixture(scope = "session")
 def deeploy_test_dir():
     """Return the DeeployTest directory path."""
