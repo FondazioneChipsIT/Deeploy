@@ -75,7 +75,6 @@ if(NOT USE_PREBUILT_PULPNN)
   #RW: GCC not recognizing -Wno-typedef-redefinition defined in PULP-NN CMakelist
   target_compile_options(pulp-nn-mixed PRIVATE -Wno-error)
   target_compile_definitions(pulp-nn-mixed PUBLIC NUM_CORES=${NUM_CORES})
-  target_link_libraries(pulp-nn-mixed PUBLIC pmsis)
 endif()
 
 target_include_directories(deeploypulp PUBLIC ${PULP_SDK_INCLUDES})
