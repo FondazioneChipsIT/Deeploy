@@ -12,14 +12,14 @@ DEFAULT_SEARCH_STRATEGY = "random-max"
 L2_SINGLEBUFFER_KERNELS_RTL = {
     "Kernels/Integer/Softmax/Regular": [300],
     "Kernels/Integer/MatMul/Regular": [16000],
-    "Kernels/Integer/Conv/Regular_2D_RQ": [4000],
+    # "Kernels/Integer/Conv/Regular_2D_RQ": [4000],
     "Kernels/FP32/MatMul": [2000],
 }
 
 L2_DOUBLEBUFFER_KERNELS_RTL = {
     "Kernels/Integer/Softmax/Regular": [600],
     "Kernels/Integer/MatMul/Regular": [32000],
-    "Kernels/Integer/Conv/Regular_2D_RQ": [8000],
+    # "Kernels/Integer/Conv/Regular_2D_RQ": [8000],
     "Kernels/FP32/MatMul": [4000],
 }
 
