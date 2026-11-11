@@ -28,8 +28,6 @@ KERNEL_TESTS_RTL = [
 ]
 
 MODEL_TESTS_RTL = [
-    "Kernels/Integer/Attention",
-    "Models/CNN_Linear2",
 ]
 
 KERNEL_TESTS = [
