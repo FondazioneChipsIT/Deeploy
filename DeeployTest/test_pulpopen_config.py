@@ -11,11 +11,11 @@ KERNEL_TESTS_RTL = [
     "Kernels/Integer/Add/Regular",
     "Kernels/Integer/MatMul/Regular",
     "Kernels/Integer/Pad/Regular_2D",
-    "Kernels/Integer/Conv/Regular_2D_RQ",
+    # "Kernels/Integer/Conv/Regular_2D_RQ",
     "Kernels/Integer/Conv/DW_2D_RQ",
-    "Kernels/Integer/Conv/PW_2D_RQ",
+    # "Kernels/Integer/Conv/PW_2D_RQ/Regular_RQ",
     "Kernels/Integer/TrueIntegerDiv",
-    "Kernels/Integer/GEMM/Regular",
+    # "Kernels/Integer/GEMM/Regular",
     "Kernels/Integer/MaxPool/Regular_2D",
     "Kernels/FP32/ReLU",
     # "Kernels/FP32/Softmax/Regular",
@@ -86,8 +86,11 @@ KERNEL_TESTS = [
     # "Models/Transformer_DeepQuant",
     "Kernels/Integer/Conv/Regular_2D_RQ",
     "Kernels/Integer/Conv/DW_2D_RQ",
+    "Kernels/Integer/Conv/PW_2D_RQ",
     "Kernels/Integer/Hardswish/Regular_RQ",
     "Kernels/Integer/TrueIntegerDiv",
+    "Kernels/Integer/GEMM/Regular",
+    "Kernels/Integer/MaxPool/Regular_2D"
 ]
 
 MODEL_TESTS = [
