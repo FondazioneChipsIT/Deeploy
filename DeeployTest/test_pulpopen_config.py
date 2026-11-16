@@ -86,7 +86,7 @@ KERNEL_TESTS = [
     # "Models/Transformer_DeepQuant",
     "Kernels/Integer/Conv/Regular_2D_RQ",
     "Kernels/Integer/Conv/DW_2D_RQ",
-    "Kernels/Integer/Conv/PW_2D_RQ",
+    "Kernels/Integer/Conv/PW_2D_RQ/Regular_RQ",
     "Kernels/Integer/Hardswish/Regular_RQ",
     "Kernels/Integer/TrueIntegerDiv",
     "Kernels/Integer/GEMM/Regular",
