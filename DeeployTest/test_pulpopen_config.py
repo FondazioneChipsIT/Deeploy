@@ -15,7 +15,7 @@ KERNEL_TESTS_RTL = [
     "Kernels/Integer/Conv/DW_2D_RQ",
     # "Kernels/Integer/Conv/PW_2D_RQ/Regular_RQ",
     "Kernels/Integer/TrueIntegerDiv",
-    "Kernels/Integer/GEMM/Regular",
+    "Kernels/Integer/GEMM/Batch_RQ",
     "Kernels/Integer/MaxPool/Regular_2D",
     "Kernels/FP32/ReLU",
     "Kernels/FP32/Softmax/Regular",
@@ -89,7 +89,7 @@ KERNEL_TESTS = [
     "Kernels/Integer/Conv/PW_2D_RQ/Regular_RQ",
     "Kernels/Integer/Hardswish/Regular_RQ",
     "Kernels/Integer/TrueIntegerDiv",
-    "Kernels/Integer/GEMM/Regular",
+    "Kernels/Integer/GEMM/Batch_RQ",
     "Kernels/Integer/MaxPool/Regular_2D"
 ]
 
