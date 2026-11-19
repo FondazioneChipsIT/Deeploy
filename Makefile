@@ -45,6 +45,14 @@ XSIMD_INSTALL_DIR ?= ${DEEPLOY_INSTALL_DIR}/xsimd
 XTENSOR_INSTALL_DIR ?= ${DEEPLOY_INSTALL_DIR}/xtensor
 GAP9_SDK_INSTALL_DIR ?= ${DEEPLOY_INSTALL_DIR}/gap9-sdk
 
+# Prebuilt pulp-nn-mixed for the PULP platforms (one library per platform and core count)
+PULPNN_INSTALL_DIR           ?= ${DEEPLOY_INSTALL_DIR}/pulp-nn-mixed
+PULPNN_BUILD_DIR             ?= ${TOOLCHAIN_DIR}/pulp-nn-mixed
+PULPNN_PLATFORMS             ?= PULPOpen Siracusa
+PULPNN_NUM_CORES             ?= 8
+PULPNN_TOOLCHAIN             ?= LLVM
+PULPNN_TOOLCHAIN_INSTALL_DIR ?= ${LLVM_INSTALL_DIR}
+
 CMAKE ?= cmake
 
 LLVM_REPO ?= https://github.com/albsposito/llvm-project.git
@@ -102,6 +110,7 @@ echo-bash:
 	@echo "export GVSOC_INSTALL_DIR=${GVSOC_INSTALL_DIR}"
 	@echo "export SOFTHIER_INSTALL_DIR=${SOFTHIER_INSTALL_DIR}"
 	@echo "export LLVM_INSTALL_DIR=${LLVM_INSTALL_DIR}"
+	@echo "export DEEPLOY_INSTALL_DIR=${DEEPLOY_INSTALL_DIR}"
 	@echo "export MEMPOOL_HOME=${MEMPOOL_INSTALL_DIR}"
 	@echo "export CMAKE=$$(which cmake)"
 	@echo "export PATH=${QEMU_INSTALL_DIR}/bin:${BANSHEE_INSTALL_DIR}:\$$PATH"
@@ -445,6 +454,31 @@ ${PULP_SDK_INSTALL_DIR}: ${TOOLCHAIN_DIR}/pulp-sdk
 	cp -r ${TOOLCHAIN_DIR}/pulp-sdk/ ${PULP_SDK_INSTALL_DIR}/../
 
 pulp-sdk: ${PULP_SDK_INSTALL_DIR}
+
+# Builds pulp-nn-mixed for each platform in PULPNN_PLATFORMS and each core count in PULPNN_NUM_CORES,
+# and installs it in ${PULPNN_INSTALL_DIR}/<platform>-<toolchain>-<cores>cores, where Deeploy builds
+# with USE_PREBUILT_PULPNN=ON (the default) pick it up. Always re-run (incrementally), so the installed
+# libraries follow the pulp-nn-mixed submodule. Needs the toolchain and the PULP SDK.
+#   e.g. make pulp-nn-mixed PULPNN_PLATFORMS=PULPOpen PULPNN_NUM_CORES="1 8"
+pulp-nn-mixed:
+	@set -e; \
+	export PULP_SDK_HOME=$${PULP_SDK_HOME:-${PULP_SDK_INSTALL_DIR}}; \
+	for platform in ${PULPNN_PLATFORMS}; do \
+		for cores in ${PULPNN_NUM_CORES}; do \
+			build=${PULPNN_BUILD_DIR}/$$platform-${PULPNN_TOOLCHAIN}-$${cores}cores; \
+			echo "[pulp-nn-mixed] Building for $$platform, ${PULPNN_TOOLCHAIN}, $$cores cores"; \
+			${CMAKE} -S ${ROOT_DIR}/TargetLibraries/PULPOpen/pulp-nn-mixed-prebuilt -B $$build \
+				-Dplatform=$$platform \
+				-DNUM_CORES=$$cores \
+				-DTOOLCHAIN=${PULPNN_TOOLCHAIN} \
+				-DTOOLCHAIN_INSTALL_DIR=${PULPNN_TOOLCHAIN_INSTALL_DIR} \
+				-DPULPNN_INSTALL_ROOT=${PULPNN_INSTALL_DIR}; \
+			${CMAKE} --build $$build -j --target pulp-nn-mixed; \
+			${CMAKE} --install $$build; \
+		done; \
+	done
+
+.PHONY: pulp-nn-mixed
 
 ${GAP_RISCV_GCC_INSTALL_DIR}:
 	mkdir -p ${GAP_RISCV_GCC_INSTALL_DIR} && cd ${GAP_RISCV_GCC_INSTALL_DIR} && \
