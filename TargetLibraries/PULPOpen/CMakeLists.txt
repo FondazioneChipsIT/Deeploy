@@ -36,32 +36,58 @@ target_compile_options(deeploypulp PRIVATE
   -Wno-uninitialized
 )
 
-# Option to use prebuilt pulp-nn library (default: ON for faster builds)
-option(USE_PREBUILT_PULPNN "Use prebuilt pulp-nn-mixed librar with 8 cores" ON)
-
-# Check if NUM_CORES matches prebuilt library requirement
-if(USE_PREBUILT_PULPNN AND NOT NUM_CORES EQUAL 8)
-  message(WARNING "[Deeploy PULP-OPEN] Prebuilt pulp-nn library is compiled for 8 cores, but NUM_CORES=${NUM_CORES}.")
-  message(WARNING "[Deeploy PULP-OPEN] Disabling prebuilt library and building from source instead.")
-  set(USE_PREBUILT_PULPNN OFF)
-endif()
+# Option to use a prebuilt pulp-nn-mixed library instead of compiling it (default: ON for faster builds).
+#
+# The library is looked up, in this order, in:
+#   1. PULPNN_PREBUILT_DIR (CMake cache variable, or environment variable of the same name), if set.
+#      It must hold libpulp-nn-mixed.a and include/, built for the current platform, toolchain and NUM_CORES.
+#   2. <install>/pulp-nn-mixed/<platform>-<toolchain>-<NUM_CORES>cores, as installed by `make pulp-nn-mixed`,
+#      where <install> is $DEEPLOY_INSTALL_DIR if set, then <Deeploy>/install.
+#   3. The legacy in-tree folder TargetLibraries/PULPOpen/prebuilt (only for NUM_CORES=8).
+# If none of them holds the library, it is built from source.
+option(USE_PREBUILT_PULPNN "Use a prebuilt pulp-nn-mixed library" ON)
+set(PULPNN_PREBUILT_DIR "$ENV{PULPNN_PREBUILT_DIR}" CACHE PATH
+  "Folder with a prebuilt libpulp-nn-mixed.a and include/ (empty: search the Deeploy install folder)")
 
 if(USE_PREBUILT_PULPNN)
-  # Use prebuilt pulp-nn library
-  set(PREBUILT_PULPNN_DIR ${CMAKE_CURRENT_LIST_DIR}/prebuilt)
+  include(${CMAKE_CURRENT_LIST_DIR}/cmake/pulp-nn-mixed-prebuilt.cmake)
 
-  if(EXISTS ${PREBUILT_PULPNN_DIR}/libpulp-nn-mixed.a)
-    message(STATUS "[Deeploy PULP-OPEN] Using prebuilt pulp-nn-mixed library")
+  # Resolved on every configure (not cached), so a build folder reused with another NUM_CORES
+  # or platform picks the matching library.
+  set(_pulpnn_candidates)
+  if(PULPNN_PREBUILT_DIR)
+    list(APPEND _pulpnn_candidates ${PULPNN_PREBUILT_DIR})
+  else()
+    if(DEFINED ENV{DEEPLOY_INSTALL_DIR})
+      list(APPEND _pulpnn_candidates $ENV{DEEPLOY_INSTALL_DIR}/pulp-nn-mixed/${PULPNN_PREBUILT_SUBDIR})
+    endif()
+    list(APPEND _pulpnn_candidates ${CMAKE_CURRENT_LIST_DIR}/../../install/pulp-nn-mixed/${PULPNN_PREBUILT_SUBDIR})
+    if(NUM_CORES EQUAL 8)
+      list(APPEND _pulpnn_candidates ${CMAKE_CURRENT_LIST_DIR}/prebuilt)
+    endif()
+  endif()
+
+  set(_pulpnn_dir)
+  foreach(_candidate IN LISTS _pulpnn_candidates)
+    if(EXISTS ${_candidate}/libpulp-nn-mixed.a AND IS_DIRECTORY ${_candidate}/include)
+      get_filename_component(_pulpnn_dir ${_candidate} ABSOLUTE)
+      break()
+    endif()
+  endforeach()
+
+  if(_pulpnn_dir)
+    message(STATUS "[Deeploy PULP-OPEN] Using prebuilt pulp-nn-mixed library from ${_pulpnn_dir}")
 
     # Create imported target for prebuilt library
     add_library(pulp-nn-mixed STATIC IMPORTED)
     set_target_properties(pulp-nn-mixed PROPERTIES
-      IMPORTED_LOCATION ${PREBUILT_PULPNN_DIR}/libpulp-nn-mixed.a
-      INTERFACE_INCLUDE_DIRECTORIES ${PREBUILT_PULPNN_DIR}/include
+      IMPORTED_LOCATION ${_pulpnn_dir}/libpulp-nn-mixed.a
+      INTERFACE_INCLUDE_DIRECTORIES ${_pulpnn_dir}/include
     )
   else()
-    message(WARNING "[Deeploy PULP-OPEN] Prebuilt pulp-nn library not found at ${PREBUILT_PULPNN_DIR}")
-    message(WARNING "[Deeploy PULP-OPEN] Falling back to building from source")
+    list(JOIN _pulpnn_candidates ", " _pulpnn_searched)
+    message(WARNING "[Deeploy PULP-OPEN] No prebuilt pulp-nn-mixed library for ${PULPNN_PREBUILT_SUBDIR} (searched: ${_pulpnn_searched})")
+    message(WARNING "[Deeploy PULP-OPEN] Falling back to building from source. Run `make pulp-nn-mixed` to install it.")
     set(USE_PREBUILT_PULPNN OFF)
   endif()
 endif()

@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-include(cmake/pulp-sdk-base.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/pulp-sdk-base.cmake)
 
 set(PULP_SDK_HOME $ENV{PULP_SDK_HOME})
 
